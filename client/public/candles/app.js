@@ -48,6 +48,21 @@ if (readyScentOptions.length === 5) {
   orderForm.insertBefore(scentHelp, noteLabel);
 }
 orderForm.insertBefore(paymentOptions, orderForm.querySelector('.import-confirm'));
+// 配送地址確認改用頁面內兩段式確認（不用瀏覽器原生 confirm，部分內建瀏覽器會直接取消原生對話框、誤擋正常客人）。
+let addressConfirmed = false;
+const addressConfirmBox = document.createElement('div');
+addressConfirmBox.id = 'address-confirm';
+addressConfirmBox.hidden = true;
+addressConfirmBox.innerHTML = '<p id="address-confirm-text"></p><button type="button" class="primary" id="address-confirm-yes">Confirm address &amp; continue to payment</button><button type="button" class="pick" id="address-confirm-edit">Edit address</button>';
+orderForm.insertBefore(addressConfirmBox, document.getElementById('submit-order'));
+addressConfirmBox.querySelector('#address-confirm-yes').addEventListener('click', () => { addressConfirmed = true; orderForm.requestSubmit(); });
+addressConfirmBox.querySelector('#address-confirm-edit').addEventListener('click', () => { addressConfirmBox.hidden = true; document.getElementById('street-address').focus(); });
+for (const fieldId of ['street-address', 'customer-suburb', 'customer-state', 'customer-postcode']) {
+  const el = document.getElementById(fieldId);
+  const resetConfirmation = () => { addressConfirmed = false; addressConfirmBox.hidden = true; };
+  el.addEventListener('input', resetConfirmation);
+  el.addEventListener('change', resetConfirmation);
+}
 let paymentDescription = "card";
 let priceLabel = 'A$99';
 const priceNodes = [];
@@ -212,11 +227,15 @@ document.getElementById('order-form').addEventListener('submit', async event => 
     delete fields.scent;
   }
   const payload = { ...fields, items: [...selected].sort((a, b) => a - b) };
-  const deliverySummary = `${fields.street}, ${fields.suburb}, ${fields.state} ${fields.postcode}, Australia`;
-  if (!window.confirm(`Please check your delivery address:\n\n${fields.name}\n${deliverySummary}\n\nWe deliver to Australia only. If this address is not in Australia, please cancel and email rokaizumi@gmail.com for a shipping quote instead.`)) {
-    status.textContent = 'Order not submitted. Please check your delivery address — we deliver to Australia only.';
+  if (!addressConfirmed) {
+    const deliverySummary = `${fields.street}, ${fields.suburb}, ${fields.state} ${fields.postcode}, Australia`;
+    document.getElementById('address-confirm-text').textContent = `Please check your delivery address: ${fields.name}, ${deliverySummary}. We deliver to Australia only — if this address is not in Australia, please edit it, or email rokaizumi@gmail.com for a shipping quote instead.`;
+    addressConfirmBox.hidden = false;
+    status.textContent = 'Please confirm your delivery address to continue to payment.';
+    addressConfirmBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
+  addressConfirmBox.hidden = true;
   submitting = true;
   status.textContent = 'Submitting your order…';
   button.disabled = true;
