@@ -7,15 +7,17 @@ const AI = window.AI_PRODUCTS;
 const DONKI = window.DONKI_PRODUCTS;
 const P = [...COSTCO, ...GROCERY, ...MASKS, ...EXCLUSIVE, ...AI, ...DONKI];
 const CATALOG_LISTS = {
+  donki: DONKI,
   costco: COSTCO,
   supermarket: GROCERY,
-  donki: DONKI,
   shop: MASKS,
   exclusive: EXCLUSIVE,
   ai: AI,
 };
 // 空分類（目前沒有上架商品）不列入可切換的分頁：分頁按鈕與區塊都隱藏，
 // 商品重新上架後自動恢復。顯示與否一律由即時商品資料決定，不寫死分類。
+// 沒有指定分類（無 hash）時的預設首頁 = 清單順序中第一個有商品的分類：
+// 目前是唐吉訶德特價；若唐吉訶德清空，自動改以日本好市多為首頁。
 const CATALOG_TABS = Object.keys(CATALOG_LISTS).filter(
   tab => CATALOG_LISTS[tab].length > 0
 );

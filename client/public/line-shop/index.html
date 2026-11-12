@@ -28,7 +28,7 @@
       <nav id="catalog-nav" aria-label="商店分類" class="hidden">
         <span class="nav-caption">選擇商品分類</span>
         <div class="catalog-switch">
-          <button class="active" data-tab="costco" aria-label="日本好市多">日本好市多<small>28 款</small></button><button data-tab="supermarket" aria-label="日本超市必買">日本超市必買<small>101 款</small></button><button data-tab="donki" aria-label="唐吉訶德特價">唐吉訶德特價<small>35 款</small></button><button data-tab="shop" aria-label="面膜選物">面膜選物<small>68 款</small></button><button data-tab="exclusive" aria-label="專屬賣場">專屬賣場<small>2 款</small></button><button data-tab="ai" aria-label="AI PC 周邊">AI PC 周邊<small>1 款</small></button>
+          <button class="active" data-tab="donki" aria-label="唐吉訶德特價">唐吉訶德特價<small>35 款</small></button><button data-tab="costco" aria-label="日本好市多">日本好市多<small>28 款</small></button><button data-tab="supermarket" aria-label="日本超市必買">日本超市必買<small>101 款</small></button><button data-tab="shop" aria-label="面膜選物">面膜選物<small>68 款</small></button><button data-tab="exclusive" aria-label="專屬賣場">專屬賣場<small>2 款</small></button><button data-tab="ai" aria-label="AI PC 周邊">AI PC 周邊<small>1 款</small></button>
         </div>
         <div class="utility-switch">
           <button data-tab="bag">購物袋 <span id="bagcount">0</span></button
@@ -37,16 +37,16 @@
       </nav>
     </header>
     <main>
-      <section id="exclusive" class="hidden">
+      <section id="donki">
         <div class="intro">
-          <p class="edition">EXCLUSIVE LISTING</p>
-          <h1>專屬賣場</h1>
-          <p>指定商品專區，商品規格與使用注意事項請見商品詳情。</p>
-          <p class="muted">不定期上架的指定商品，數量有限；可與其他分類合併選購、一起結帳。</p>
+          <p class="edition">DON QUIJOTE FLYER SPECIALS</p>
+          <h1>唐吉訶德特價</h1>
+          <p>本期唐吉訶德傳單特價商品，從美妝保養到零食、調味料與生活用品。</p>
+          <p class="muted">傳單特價期間限定，接單後我們會到日本唐吉訶德門市為您採買；數量有限，售完或特價結束即下架。可與其他分類合併選購、一起結帳。</p>
         </div>
-        <div id="exclusive-products" class="grid"></div>
+        <div id="donki-products" class="grid"></div>
       </section>
-      <section id="costco">
+      <section id="costco" class="hidden">
         <div class="intro">
           <p class="edition">JAPAN COSTCO SELECTION / VOL. 01</p>
           <h1>日本好市多</h1>
@@ -72,15 +72,6 @@
         <p id="supermarket-count" class="muted"></p>
         <div id="supermarket-products" class="grid"></div>
       </section>
-      <section id="donki" class="hidden">
-        <div class="intro">
-          <p class="edition">DON QUIJOTE FLYER SPECIALS</p>
-          <h1>唐吉訶德特價</h1>
-          <p>本期唐吉訶德傳單特價商品，從美妝保養到零食、調味料與生活用品。</p>
-          <p class="muted">傳單特價期間限定，接單後我們會到日本唐吉訶德門市為您採買；數量有限，售完或特價結束即下架。可與其他分類合併選購、一起結帳。</p>
-        </div>
-        <div id="donki-products" class="grid"></div>
-      </section>
       <section id="shop" class="hidden">
         <div class="intro">
           <p class="edition">JAPAN MASK SELECTION / VOL. 01</p>
@@ -98,6 +89,15 @@
         </div>
         <p id="shop-count" class="muted"></p>
         <div id="products" class="grid"></div>
+      </section>
+      <section id="exclusive" class="hidden">
+        <div class="intro">
+          <p class="edition">EXCLUSIVE LISTING</p>
+          <h1>專屬賣場</h1>
+          <p>指定商品專區，商品規格與使用注意事項請見商品詳情。</p>
+          <p class="muted">不定期上架的指定商品，數量有限；可與其他分類合併選購、一起結帳。</p>
+        </div>
+        <div id="exclusive-products" class="grid"></div>
       </section>
       <section id="ai" class="hidden">
         <div class="intro">
@@ -147,7 +147,7 @@
       </p>
       <p><a href="policies.html">商店資料・購物條款與隱私說明</a></p>
       <footer>
-        ろかいずみ合同会社（ROKA IZUMI）<br />日本面膜・日本超市必買・日本好市多・唐吉訶德特價・AI PC 周邊
+        ろかいずみ合同会社（ROKA IZUMI）<br />唐吉訶德特價・日本好市多・日本超市必買・日本面膜・AI PC 周邊
         · 日本嚴選商店<br /><a href="mailto:info@rokaizumi-tw.jp"
           >info@rokaizumi-tw.jp</a
         >
@@ -155,7 +155,7 @@
     </main>
     <div class="cartbar">
       <div class="cartbar-inner">
-        <span id="bartext">日本好市多 · 已標示售價</span
+        <span id="bartext">唐吉訶德特價 · 已標示售價</span
         ><button id="barbutton">查看購物袋</button>
       </div>
     </div>
@@ -205,12 +205,12 @@
             p => p.catalog === "donki"
           );
           for (const [tab, key] of [
-            ["shop", "PRODUCTS"],
-            ["supermarket", "SUPERMARKET_PRODUCTS"],
+            ["donki", "DONKI_PRODUCTS"],
             ["costco", "COSTCO_PRODUCTS"],
+            ["supermarket", "SUPERMARKET_PRODUCTS"],
+            ["shop", "PRODUCTS"],
             ["exclusive", "EXCLUSIVE_PRODUCTS"],
             ["ai", "AI_PRODUCTS"],
-            ["donki", "DONKI_PRODUCTS"],
           ]) {
             document.querySelector(
               '[data-tab="' + tab + '"] small'
@@ -223,7 +223,7 @@
             document.querySelector(".notice").textContent =
               "Stripe 測試環境｜不會實際扣款";
           const js = document.createElement("script");
-          js.src = "app.js?v=20261112-batch8";
+          js.src = "app.js?v=20261112-batch9";
           document.body.appendChild(js);
         } catch {
           document.querySelector(".notice").textContent =

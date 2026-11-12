@@ -13,12 +13,12 @@ import { ShopInputError } from "./line-shop-pricing";
 
 // 商店首頁把商品分區，機器人上架時只能挑這幾種，否則前台不會顯示。
 export const CATALOG_LABELS: Record<ShopCatalog, string> = {
-  shop: "日本選品",
-  supermarket: "日本超市",
+  donki: "唐吉訶德特價",
   costco: "好市多",
+  supermarket: "日本超市",
+  shop: "日本選品",
   exclusive: "獨家",
   ai: "AI PC 周邊",
-  donki: "唐吉訶德特價",
 };
 
 export type Draft = {
@@ -72,16 +72,16 @@ export function shopBotAdminIds() {
 
 const catalogKeyboard = Markup.inlineKeyboard([
   [
-    Markup.button.callback(CATALOG_LABELS.shop, "cat:shop"),
-    Markup.button.callback(CATALOG_LABELS.supermarket, "cat:supermarket"),
-  ],
-  [
-    Markup.button.callback(CATALOG_LABELS.costco, "cat:costco"),
-    Markup.button.callback(CATALOG_LABELS.exclusive, "cat:exclusive"),
-  ],
-  [
-    Markup.button.callback(CATALOG_LABELS.ai, "cat:ai"),
     Markup.button.callback(CATALOG_LABELS.donki, "cat:donki"),
+    Markup.button.callback(CATALOG_LABELS.costco, "cat:costco"),
+  ],
+  [
+    Markup.button.callback(CATALOG_LABELS.supermarket, "cat:supermarket"),
+    Markup.button.callback(CATALOG_LABELS.shop, "cat:shop"),
+  ],
+  [
+    Markup.button.callback(CATALOG_LABELS.exclusive, "cat:exclusive"),
+    Markup.button.callback(CATALOG_LABELS.ai, "cat:ai"),
   ],
 ]);
 const confirmKeyboard = Markup.inlineKeyboard([
