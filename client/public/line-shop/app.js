@@ -226,10 +226,10 @@ function renderProducts() {
             `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${p.tag}</span></div><p class="price">${p.price === null ? "價格核對中" : money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : p.price === null ? `可選數量上限：${p.stock} 包／盒` : `可選數量上限：${p.stock} 包／盒 · 運費另計`}</p>${buyButton(p)}</div></article>`
         )
         .join("")
-    : `<div class="empty"><h2>找不到符合的商品</h2><p>換個關鍵字試試，或清除搜尋看全部 ${MASKS.length} 款面膜。</p></div>`;
+    : `<div class="empty"><h2>找不到符合的商品</h2><p>換個關鍵字試試，或清除搜尋看全部面膜。</p></div>`;
   $("shop-count").textContent = q
-    ? `搜尋「${maskQuery.trim()}」· ${list.length}款`
-    : `全部 · ${MASKS.length}款`;
+    ? `搜尋「${maskQuery.trim()}」`
+    : `全部`;
 }
 function renderGrocery() {
   $("supermarket-products").innerHTML = GROCERY.filter(
@@ -240,8 +240,7 @@ function renderGrocery() {
         `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><p class="price">${money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : `可選數量上限：${p.stock} 件 · ${p.freeShipping ? "此商品免運" : "運費另計"}`}</p>${buyButton(p)}</div></article>`
     )
     .join("");
-  $("supermarket-count").textContent =
-    `${groceryCategory} · ${GROCERY.filter(p => groceryCategory === "全部" || p.category === groceryCategory).length}款`;
+  $("supermarket-count").textContent = `${groceryCategory}`;
   document.querySelectorAll("[data-category]").forEach(b => {
     const active = b.dataset.category === groceryCategory;
     b.classList.toggle("active", active);
@@ -287,16 +286,16 @@ function renderCart() {
   $("bartext").textContent = t.count
     ? `${t.count}件 · 商品 ${money(t.subtotal)}`
     : currentCatalog === "costco"
-      ? `日本好市多${COSTCO.length}款 · 已標示售價`
+      ? `日本好市多 · 已標示售價`
       : currentCatalog === "supermarket"
-        ? `日本超市必買${GROCERY.length}選 · 已標示售價`
+        ? `日本超市必買 · 已標示售價`
         : currentCatalog === "exclusive"
-          ? `專屬賣場${EXCLUSIVE.length}款 · 已標示售價`
+          ? `專屬賣場 · 已標示售價`
           : currentCatalog === "donki"
-            ? `唐吉訶德特價${DONKI.length}款 · 已標示售價`
+            ? `唐吉訶德特價 · 已標示售價`
             : currentCatalog === "ai"
-            ? `AI PC 周邊${AI.length}款 · 已標示售價`
-            : `${MASKS.length}款面膜與眼膜 · 已標示售價`;
+            ? `AI PC 周邊 · 已標示售價`
+            : `面膜與眼膜 · 已標示售價`;
   $("cart").innerHTML = t.count
     ? P.filter(p => cart.has(p.id))
         .map(
@@ -442,7 +441,7 @@ renderDonki();
 renderCart();
 showTab(currentCatalog);
 // 分類導覽在 index.html 預設隱藏（.hidden），避免資料載入前先閃出靜態寫死的
-// 舊分類與款數；即時資料的第一輪渲染（CATALOG_TABS、空分類隱藏、計數）都
+// 舊分類；即時資料的第一輪渲染（CATALOG_TABS、空分類隱藏）都
 // 完成後才在這裡顯示，之後有商品重新上架的分類也會照原邏輯自動出現。
 $("catalog-nav")?.classList.remove("hidden");
 // 後台每一列都有「前台商品頁」連結，指向 ?p=<編號>；帶這個參數就直接切到

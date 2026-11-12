@@ -28,7 +28,7 @@
       <nav id="catalog-nav" aria-label="商店分類" class="hidden">
         <span class="nav-caption">選擇商品分類</span>
         <div class="catalog-switch">
-          <button class="active" data-tab="donki" aria-label="唐吉訶德特價">唐吉訶德特價<small>35 款</small></button><button data-tab="costco" aria-label="日本好市多">日本好市多<small>28 款</small></button><button data-tab="supermarket" aria-label="日本超市必買">日本超市必買<small>101 款</small></button><button data-tab="shop" aria-label="面膜選物">面膜選物<small>68 款</small></button><button data-tab="exclusive" aria-label="專屬賣場">專屬賣場<small>2 款</small></button><button data-tab="ai" aria-label="AI PC 周邊">AI PC 周邊<small>1 款</small></button>
+          <button class="active" data-tab="donki" aria-label="唐吉訶德特價">唐吉訶德特價</button><button data-tab="costco" aria-label="日本好市多">日本好市多</button><button data-tab="supermarket" aria-label="日本超市必買">日本超市必買</button><button data-tab="shop" aria-label="面膜選物">面膜選物</button><button data-tab="exclusive" aria-label="專屬賣場">專屬賣場</button><button data-tab="ai" aria-label="AI PC 周邊">AI PC 周邊</button>
         </div>
         <div class="utility-switch">
           <button data-tab="bag">購物袋 <span id="bagcount">0</span></button
@@ -61,7 +61,7 @@
         <div class="intro">
           <p class="edition">JAPAN SUPERMARKET SELECTION / VOL. 01</p>
           <h1>日本超市必買</h1>
-          <p>101款日本超市選物，從一杯茶到日常料理。</p>
+          <p>日本超市選物，從一杯茶到日常料理。</p>
           <p class="muted">日本超市與藥妝店的日常人氣選物：零食、飲料、調味料與生活用品，台灣較少見的口味與限定品都在這裡。</p>
         </div>
         <div
@@ -76,7 +76,7 @@
         <div class="intro">
           <p class="edition">JAPAN MASK SELECTION / VOL. 01</p>
           <h1>日本面膜選物</h1>
-          <p>68款面膜與眼膜，從日常保濕到局部保養。</p>
+          <p>面膜與眼膜，從日常保濕到局部保養。</p>
           <p class="muted">日本藥妝人氣面膜與眼膜，主打補水保濕與日常修護；可依片數、系列與膚質需求挑選。</p>
         </div>
         <div class="catalog-search">
@@ -204,18 +204,6 @@
           window.DONKI_PRODUCTS = d.products.filter(
             p => p.catalog === "donki"
           );
-          for (const [tab, key] of [
-            ["donki", "DONKI_PRODUCTS"],
-            ["costco", "COSTCO_PRODUCTS"],
-            ["supermarket", "SUPERMARKET_PRODUCTS"],
-            ["shop", "PRODUCTS"],
-            ["exclusive", "EXCLUSIVE_PRODUCTS"],
-            ["ai", "AI_PRODUCTS"],
-          ]) {
-            document.querySelector(
-              '[data-tab="' + tab + '"] small'
-            ).textContent = window[key].length + " 款";
-          }
           if (!c.enabled)
             document.querySelector(".notice").textContent =
               "刷卡設定準備中｜暫未開放下單";
@@ -223,7 +211,7 @@
             document.querySelector(".notice").textContent =
               "Stripe 測試環境｜不會實際扣款";
           const js = document.createElement("script");
-          js.src = "app.js?v=20261112-batch9";
+          js.src = "app.js?v=20261112-batch10";
           document.body.appendChild(js);
         } catch {
           document.querySelector(".notice").textContent =
