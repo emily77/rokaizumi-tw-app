@@ -4,10 +4,12 @@ const GROCERY = window.SUPERMARKET_PRODUCTS;
 const COSTCO = window.COSTCO_PRODUCTS;
 const EXCLUSIVE = window.EXCLUSIVE_PRODUCTS;
 const AI = window.AI_PRODUCTS;
-const P = [...COSTCO, ...GROCERY, ...MASKS, ...EXCLUSIVE, ...AI];
+const DONKI = window.DONKI_PRODUCTS;
+const P = [...COSTCO, ...GROCERY, ...MASKS, ...EXCLUSIVE, ...AI, ...DONKI];
 const CATALOG_LISTS = {
   costco: COSTCO,
   supermarket: GROCERY,
+  donki: DONKI,
   shop: MASKS,
   exclusive: EXCLUSIVE,
   ai: AI,
@@ -262,6 +264,12 @@ function renderAi() {
       `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${esc(p.tag || "AI PC 周邊")}</span>${p.freeShipping ? `<span class="tag">免運</span>` : ""}</div><p class="price">${money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : `可選數量上限：${p.stock} 件 · ${p.freeShipping ? "此商品免運" : "運費另計"}`}</p>${buyButton(p)}</div></article>`
   ).join("");
 }
+function renderDonki() {
+  $("donki-products").innerHTML = DONKI.map(
+    p =>
+      `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${esc(p.tag || "唐吉訶德特價")}</span></div><p class="price">${money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : `可選數量上限：${p.stock} 件 · ${p.freeShipping ? "此商品免運" : "運費另計"}`}</p>${buyButton(p)}</div></article>`
+  ).join("");
+}
 function sumHtml(t) {
   const rule = t.hasFreeShipping ? (t.shippingSubtotal ? "免運商品不另收運費；其他商品依一般運費規則計算。" : "購物袋內只有免運商品，不另收運費。") : "一般商品滿 NT$2,000 可下單，運費 NT$220；滿 NT$5,000 免運。";
   return `<div class="summary"><div class="sumrow"><span>商品小計（${t.count}件）</span><strong>${money(t.subtotal)}</strong></div><div class="sumrow"><span>${t.shippingSubtotal ? "一般商品 EMS 運費" : "運費"}${t.shippingSubtotal >= 5000 ? "（免運）" : ""}</span><strong>${money(t.shipping)}</strong></div><p class="muted">${rule}</p><div class="sumrow total"><span>總額</span><span>${money(t.total)}</span></div></div>`;
@@ -282,7 +290,9 @@ function renderCart() {
         ? `日本超市必買${GROCERY.length}選 · 已標示售價`
         : currentCatalog === "exclusive"
           ? `專屬賣場${EXCLUSIVE.length}款 · 已標示售價`
-          : currentCatalog === "ai"
+          : currentCatalog === "donki"
+            ? `唐吉訶德特價${DONKI.length}款 · 已標示售價`
+            : currentCatalog === "ai"
             ? `AI PC 周邊${AI.length}款 · 已標示售價`
             : `${MASKS.length}款面膜與眼膜 · 已標示售價`;
   $("cart").innerHTML = t.count
@@ -302,7 +312,7 @@ function detail(id) {
   if (!p) return;
   $("detailtitle").textContent = p.name;
   $("detailbody").innerHTML =
-    `${p.image ? `<div class="detail-photo">${packImage(p)}</div>` : `<div class="detail-pending">${esc(p.jp)}<small>商品照片準備中</small></div>`}${p.jp ? `<p class="meta">${esc(p.jp)}</p>` : ""}<section aria-label="商品說明"><h3>商品說明</h3><p>${esc(p.desc)}</p></section>${specLine(p)}<p class="price">${p.price === null ? "價格核對中" : money(price(p))} <span class="muted">${p.price === null ? "" : (p.freeShipping ? "此商品免運" : "售價・運費另計")}</span></p><p><strong>${soldOut(p) ? "目前無現貨" : "可選數量上限："}</strong>${soldOut(p) ? "" : p.catalog === "exclusive" ? p.stock + " 組" : p.catalog === "supermarket" || p.catalog === "costco" || p.catalog === "ai" ? p.stock + " 件" : p.stock + " 包／盒"}</p>${p.catalog === "costco" ? `<section aria-label="商品與保存"><h3>商品與保存</h3><p>成分、過敏原、保存方式與期限，請以商品包裝標示為準。</p></section>` : p.catalog === "supermarket" ? `<section aria-label="食用與保存"><h3>食用與保存</h3><p>商品搭配方式供您參考；成分、過敏原、保存方式與期限，請以商品包裝標示為準。</p></section>${sourceLink(p)}` : p.catalog === "ai" ? `<section aria-label="規格與保固"><h3>規格與保固</h3><p>USB-A／USB-C 有線連接與 Bluetooth 無線連接皆可使用；首次使用請先以 USB 線連接電腦，或依說明書完成藍牙配對。原廠兩年保固，人為損壞與非正常使用不在保固範圍內。</p><p>商品由日本寄出，規格、同梱物與相容性請以原廠與實際收到的商品標示為準。</p>${sourceLink(p)}</section>` : p.catalog === "exclusive" && p.id === "EXC002" ? `<section aria-label="保存提醒"><h3>保存提醒</h3><p>保存方式與期限請以實際商品包裝標示為準。</p></section>` : p.catalog === "exclusive" ? `<section aria-label="使用與保存"><h3>使用與注意事項</h3><p>請依商品包裝標示使用。使用前先在衣物不明顯處測試；本品不可用於人體，使用後請清洗衣物並洗淨手部。</p>${sourceLink(p)}</section>` : `<section aria-label="使用與保存"><h3>使用與保存</h3><p>請依商品包裝標示的使用部位、方式與敷用時間使用；使用後避免重複使用同一片。使用時若有不適，請停止使用。</p><p>多片裝開封後請密封保存，避免高溫及陽光直射。完整成分、保存期限與個別注意事項，請以收到的商品包裝標示為準。</p></section>`}${buyButton(p)}`;
+    `${p.image ? `<div class="detail-photo">${packImage(p)}</div>` : `<div class="detail-pending">${esc(p.jp)}<small>商品照片準備中</small></div>`}${p.jp ? `<p class="meta">${esc(p.jp)}</p>` : ""}<section aria-label="商品說明"><h3>商品說明</h3><p>${esc(p.desc)}</p></section>${specLine(p)}<p class="price">${p.price === null ? "價格核對中" : money(price(p))} <span class="muted">${p.price === null ? "" : (p.freeShipping ? "此商品免運" : "售價・運費另計")}</span></p><p><strong>${soldOut(p) ? "目前無現貨" : "可選數量上限："}</strong>${soldOut(p) ? "" : p.catalog === "exclusive" ? p.stock + " 組" : p.catalog === "supermarket" || p.catalog === "costco" || p.catalog === "ai" || p.catalog === "donki" ? p.stock + " 件" : p.stock + " 包／盒"}</p>${p.catalog === "costco" ? `<section aria-label="商品與保存"><h3>商品與保存</h3><p>成分、過敏原、保存方式與期限，請以商品包裝標示為準。</p></section>` : p.catalog === "supermarket" ? `<section aria-label="食用與保存"><h3>食用與保存</h3><p>商品搭配方式供您參考；成分、過敏原、保存方式與期限，請以商品包裝標示為準。</p></section>${sourceLink(p)}` : p.catalog === "ai" ? `<section aria-label="規格與保固"><h3>規格與保固</h3><p>USB-A／USB-C 有線連接與 Bluetooth 無線連接皆可使用；首次使用請先以 USB 線連接電腦，或依說明書完成藍牙配對。原廠兩年保固，人為損壞與非正常使用不在保固範圍內。</p><p>商品由日本寄出，規格、同梱物與相容性請以原廠與實際收到的商品標示為準。</p>${sourceLink(p)}</section>` : p.catalog === "exclusive" && p.id === "EXC002" ? `<section aria-label="保存提醒"><h3>保存提醒</h3><p>保存方式與期限請以實際商品包裝標示為準。</p></section>` : p.catalog === "exclusive" ? `<section aria-label="使用與保存"><h3>使用與注意事項</h3><p>請依商品包裝標示使用。使用前先在衣物不明顯處測試；本品不可用於人體，使用後請清洗衣物並洗淨手部。</p>${sourceLink(p)}</section>` : p.catalog === "donki" ? `<section aria-label="商品與保存"><h3>商品與保存</h3><p>唐吉訶德傳單特價商品，接單後至日本門市採買，數量有限。成分、保存方式與期限，請以商品包裝標示為準。</p></section>` : `<section aria-label="使用與保存"><h3>使用與保存</h3><p>請依商品包裝標示的使用部位、方式與敷用時間使用；使用後避免重複使用同一片。使用時若有不適，請停止使用。</p><p>多片裝開封後請密封保存，避免高溫及陽光直射。完整成分、保存期限與個別注意事項，請以收到的商品包裝標示為準。</p></section>`}${buyButton(p)}`;
   openDialog($("detail"));
 }
 function checkout() {
@@ -426,6 +436,7 @@ renderGrocery();
 renderCostco();
 renderExclusive();
 renderAi();
+renderDonki();
 renderCart();
 showTab(currentCatalog);
 // 分類導覽在 index.html 預設隱藏（.hidden），避免資料載入前先閃出靜態寫死的

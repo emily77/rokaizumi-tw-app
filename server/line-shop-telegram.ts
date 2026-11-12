@@ -18,6 +18,7 @@ export const CATALOG_LABELS: Record<ShopCatalog, string> = {
   costco: "好市多",
   exclusive: "獨家",
   ai: "AI PC 周邊",
+  donki: "唐吉訶德特價",
 };
 
 export type Draft = {
@@ -78,7 +79,10 @@ const catalogKeyboard = Markup.inlineKeyboard([
     Markup.button.callback(CATALOG_LABELS.costco, "cat:costco"),
     Markup.button.callback(CATALOG_LABELS.exclusive, "cat:exclusive"),
   ],
-  [Markup.button.callback(CATALOG_LABELS.ai, "cat:ai")],
+  [
+    Markup.button.callback(CATALOG_LABELS.ai, "cat:ai"),
+    Markup.button.callback(CATALOG_LABELS.donki, "cat:donki"),
+  ],
 ]);
 const confirmKeyboard = Markup.inlineKeyboard([
   [

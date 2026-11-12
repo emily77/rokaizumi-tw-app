@@ -256,6 +256,7 @@ export const SHOP_CATALOGS = [
   "costco",
   "exclusive",
   "ai",
+  "donki",
 ] as const;
 export type ShopCatalog = (typeof SHOP_CATALOGS)[number];
 export type NewShopProduct = {
@@ -2680,6 +2681,17 @@ router.get(
           active: Boolean(r.active),
           image: typeof product.image === "string" ? product.image : "",
           freeShipping: product.freeShipping === true,
+          // 傳單特價商品的來源與期限只存在 data_json（前台 catalog() 不送出），
+          // 後台列表要看得到，老闆才知道去哪家店買、特價到哪天。
+          flyerSource:
+            typeof product.flyerSource === "string" ? product.flyerSource : "",
+          flyerStores:
+            typeof product.flyerStores === "string" ? product.flyerStores : "",
+          flyerPriceJPY:
+            typeof product.flyerPriceJPY === "number"
+              ? product.flyerPriceJPY
+              : null,
+          saleEnd: typeof product.saleEnd === "string" ? product.saleEnd : "",
           overridden: Object.keys(admin),
           // 封存名單寫在程式碼裡（法規或供貨問題），不可用介面重新上架。
           blocked: excluded.has(r.id),

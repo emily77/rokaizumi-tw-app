@@ -74,6 +74,31 @@ export function isStaticAssetPath(pathname: string): boolean {
   return /\.(?:js|mjs|css|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|json|xml|txt|map)$/i.test(pathname);
 }
 
+/**
+ * 商品圖 sidecar 的檔名檢查：只接受單一檔名（不含路徑分隔字元），
+ * 且必須是 .webp，避免路徑穿越。
+ */
+export function isSidecarImageFileName(file: string): boolean {
+  return /^[A-Za-z0-9][A-Za-z0-9._-]*\.webp$/i.test(file);
+}
+
+/**
+ * 讀取商品圖的 base64 sidecar（<檔名>.webp.b64）並解碼回原始 bytes。
+ * 部分商品圖的二進位內容無法經由文字檔寫入管道進 repo，所以改存
+ * base64 文字 sidecar，由這裡在 serve 時還原。沒有 sidecar、檔名
+ * 不合格或內容解不出 bytes 時回傳 null，呼叫端照常走靜態檔案。
+ */
+export function decodeSidecarImage(imgDir: string, file: string): Buffer | null {
+  if (!isSidecarImageFileName(file)) return null;
+  try {
+    const raw = fs.readFileSync(path.join(imgDir, `${file}.b64`), "utf-8");
+    const bytes = Buffer.from(raw.trim(), "base64");
+    return bytes.length > 0 ? bytes : null;
+  } catch {
+    return null;
+  }
+}
+
 export function serveStatic(app: Express) {
   // 優先級: dist/public > server/public > client/public
   let distPath = path.resolve(import.meta.dirname, "public");
@@ -107,6 +132,19 @@ export function serveStatic(app: Express) {
       console.warn(`⚠️ products.json not found at: ${productsPath}`);
     }
   }
+
+  // 商品圖若有 base64 sidecar（<檔名>.webp.b64），先解碼回原圖回傳；
+  // 優先於 express.static，讓 sidecar 蓋過同名的實體檔案。
+  // 沒有 sidecar 的圖片回 next()，照常走下面的靜態服務，行為不變。
+  const lineShopImgDir = path.resolve(distPath, "line-shop", "img");
+  app.get("/line-shop/img/:file", (req, res, next) => {
+    const bytes = decodeSidecarImage(lineShopImgDir, req.params.file);
+    if (!bytes) return next();
+    res.setHeader("Content-Type", "image/webp");
+    const cacheControl = staticCacheControl(path.join(lineShopImgDir, req.params.file));
+    if (cacheControl) res.setHeader("Cache-Control", cacheControl);
+    res.end(bytes);
+  });
 
   app.use(
     express.static(distPath, {
