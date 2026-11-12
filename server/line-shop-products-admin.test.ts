@@ -341,7 +341,7 @@ describe("LINE shop product admin", () => {
     const res = await call("/products");
     const desc = (await res.json()).products[0].desc;
     expect(desc).not.toBe("舊的說明");
-    expect(desc).toContain("共10片");
+    expect(desc).toContain("毛穴撫子米萃保濕面膜，10片裝");
   });
 });
 

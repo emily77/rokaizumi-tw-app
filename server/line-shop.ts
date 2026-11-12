@@ -91,6 +91,7 @@ const STOCK_RESET_MIGRATION = "2026-10-14-stock-10";
 const SELF_HOSTED_IMAGES_MIGRATION = "2026-10-30-self-hosted-images";
 const FREE_SHIPPING_MIGRATION = "2026-10-31-free-shipping-products";
 const BATCH1_FIXES_MIGRATION = "2026-11-12-batch1-fixes";
+const BATCH3_CONTENT_MIGRATION = "2026-11-12-batch3-content";
 let pool: Pool | undefined;
 let initialization: Promise<void> | undefined;
 async function database() {
@@ -395,6 +396,1132 @@ async function onceWithLock(
     await conn.query("SELECT RELEASE_LOCK(?)", [lockName]);
   }
 }
+// 2026-11-12 稽核第三批（內容工程）的資料修正對照表：
+// B7 品名中文化、B2 罐頭說明重寫、B3 好市多規格補齊、C6 重量補齊。
+// from 為上線當時的現值；migration 只在目前值 === from 時才覆寫，
+// 後台（admin_json）若有不同的自訂值不會被蓋掉。
+const BATCH3_CHANGES: Record<
+  string,
+  Partial<
+    Record<
+      "name" | "desc" | "spec" | "weight",
+      { from: unknown; to: unknown }
+    >
+  >
+> = {
+ "COSTCO-19367": {
+  "name": {
+   "from": "クガニ發酵薑黃錠700粒",
+   "to": "Kugani 發酵薑黃錠 700粒"
+  },
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "700粒"
+  }
+ },
+ "COSTCO-49372": {
+  "name": {
+   "from": "でん六綜合下酒米果 40袋",
+   "to": "Denroku 綜合下酒米果 40袋"
+  },
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "40袋"
+  }
+ },
+ "COSTCO-69281": {
+  "name": {
+   "from": "たいめいけん咖哩仙貝",
+   "to": "Taimeiken 咖哩仙貝"
+  },
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "410g（小袋約25袋）"
+  },
+  "weight": {
+   "from": null,
+   "to": 410
+  }
+ },
+ "COSTCO-73074": {
+  "name": {
+   "from": "ほりにし戶外萬用調味料",
+   "to": "Horinishi 戶外萬用調味料"
+  },
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "250g"
+  },
+  "weight": {
+   "from": null,
+   "to": 250
+  }
+ },
+ "COSTCO-77863": {
+  "name": {
+   "from": "ニューモ育髮液75ml",
+   "to": "Newmo 育髮液 75ml"
+  },
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "75ml"
+  },
+  "weight": {
+   "from": null,
+   "to": 75
+  }
+ },
+ "EXC001": {
+  "name": {
+   "from": "くらしリズム 衣物去漬片 10盒組",
+   "to": "Kurashi Rhythm 衣物去漬片 10盒組"
+  },
+  "desc": {
+   "from": "日本製「くらしリズム」衣物去漬片，方便外出攜帶。每盒5包，10盒共50包，單片約100×150mm。使用時可先在污漬背面墊上紙巾，再以去漬片讓液體滲入污漬，輕柔拍拭後夾起帶走。適用於水性與油性污漬的應急處理；效果會因污漬種類與放置時間而異，頑固污漬請交由專業洗衣店處理。請勿用於人體；使用前先在衣物不明顯處測試，使用後請清洗衣物並洗淨手部。詳細注意事項以包裝標示為準。",
+   "to": "日本製「Kurashi Rhythm」衣物去漬片，方便外出攜帶。每盒5包，10盒共50包，單片約100×150mm。使用時可先在污漬背面墊上紙巾，再以去漬片讓液體滲入污漬，輕柔拍拭後夾起帶走。適用於水性與油性污漬的應急處理；效果會因污漬種類與放置時間而異，頑固污漬請交由專業洗衣店處理。請勿用於人體；使用前先在衣物不明顯處測試，使用後請清洗衣物並洗淨手部。詳細注意事項以包裝標示為準。"
+  }
+ },
+ "M020": {
+  "name": {
+   "from": "KOSE Clear Turn｜ごめんね素肌 面膜",
+   "to": "KOSE Clear Turn｜對不起素肌面膜"
+  },
+  "desc": {
+   "from": "共7片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "KOSE Clear Turn 對不起素肌面膜，7片裝。潔膚後敷用，適合日常保養；使用方式請以包裝標示為準。"
+  }
+ },
+ "S007": {
+  "name": {
+   "from": "Calbee じゃがりこ 沙拉口味（57g）",
+   "to": "Calbee Jagariko 沙拉口味（57g）"
+  },
+  "weight": {
+   "from": null,
+   "to": 57
+  }
+ },
+ "S011": {
+  "name": {
+   "from": "Bourbon 百邦 ルマンド千層餅（12本）",
+   "to": "Bourbon Lumonde 千層餅（12本）"
+  }
+ },
+ "M023": {
+  "desc": {
+   "from": "共30片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "THE STEM CELL NMN 保濕面膜，30片裝。潔膚後敷用，適合放進日常保養流程；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M025": {
+  "desc": {
+   "from": "共30片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "THE STEM CELL WHITE 保濕面膜，30片裝。潔膚後敷用，適合日常保養；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M026": {
+  "desc": {
+   "from": "共30片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "THE STEM CELL 白玉素肌精華面膜，30片裝。潔膚後敷用，適合日常保養；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M027": {
+  "desc": {
+   "from": "共30片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "美粧 AKARI NMN PREMIUM 保濕面膜，30片裝。潔膚後敷用，適合日常保養；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M040": {
+  "desc": {
+   "from": "共30片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "MDSKIN LABO 穀胱甘肽保濕面膜，30片裝。潔膚後敷用，適合日常保養；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M051": {
+  "desc": {
+   "from": "共30片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "NAVIS ENCHANTÉ 穀胱甘肽面膜，30片裝。潔膚後敷用，適合日常保養；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M056": {
+  "desc": {
+   "from": "共30片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "MDSKIN LABO CICA 保濕面膜，30片裝。潔膚後敷用，適合日常保養；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M021": {
+  "desc": {
+   "from": "共30片，以滋潤保養為主題，適合想在日常流程中加入面膜護理時使用。",
+   "to": "THE STEM CELL PDRN 精華面膜，30片裝。潔膚後敷用，偏滋潤的日常保養選擇；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M022": {
+  "desc": {
+   "from": "共30片，以滋潤保養為主題，適合想在日常流程中加入面膜護理時使用。",
+   "to": "THE STEM CELL 視黃醇與維他命精華面膜，30片裝。潔膚後敷用；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M024": {
+  "desc": {
+   "from": "共30片，以滋潤保養為主題，適合想在日常流程中加入面膜護理時使用。",
+   "to": "THE STEM CELL BIO LIPOSOME 脂質體面膜，30片裝。潔膚後敷用，偏滋潤的日常保養選擇；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M057": {
+  "desc": {
+   "from": "共30片，以滋潤保養為主題，適合想在日常流程中加入面膜護理時使用。",
+   "to": "REPAIR PRO 滋潤保養面膜，30片裝。潔膚後敷用；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M076": {
+  "desc": {
+   "from": "共30片，以滋潤保養為主題，適合想在日常流程中加入面膜護理時使用。",
+   "to": "SPIRA WHITE HARI 滋潤面膜，30片裝。潔膚後敷用；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M004": {
+  "desc": {
+   "from": "共7片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "LuLuLun HYDRA V 面膜，7片裝、美容液150mL。潔膚後敷用，屬於日常保濕系列；使用方式請以包裝標示為準。"
+  },
+  "spec": {
+   "from": "7片 / エッセンス150mL",
+   "to": "7片／美容液150mL"
+  }
+ },
+ "M006": {
+  "desc": {
+   "from": "共7片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "LuLuLun HYDRA F 面膜，7片裝、美容液114mL。潔膚後敷用，屬於日常保濕系列；使用方式請以包裝標示為準。"
+  },
+  "spec": {
+   "from": "7片 / エッセンス114mL",
+   "to": "7片／美容液114mL"
+  }
+ },
+ "M034": {
+  "desc": {
+   "from": "共7片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "Quality 1st THE DERMA 日常保濕面膜，7片裝。潔膚後敷用；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M011": {
+  "desc": {
+   "from": "共7片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "Quality 1st VC100 面膜，7片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M035": {
+  "desc": {
+   "from": "共7片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "Quality 1st THE DERMA VC100 面膜，7片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M059": {
+  "desc": {
+   "from": "共7片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "Re'senza SUPER VC100 面膜，7片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M029": {
+  "desc": {
+   "from": "單片包裝，單片包裝方便按次使用，也適合旅行或外出時放進隨身行李。",
+   "to": "PICOMONTE Dcure+ 視黃醇單片面膜，單片包裝方便按次使用，也適合旅行或外出時放進隨身行李；使用方式請以包裝標示為準。"
+  }
+ },
+ "M030": {
+  "desc": {
+   "from": "單片包裝，單片包裝方便按次使用，也適合旅行或外出時放進隨身行李。",
+   "to": "PICOMONTE Dcure+ CICA 單片面膜，單片包裝方便按次使用，也適合旅行或外出時放進隨身行李；使用方式請以包裝標示為準。"
+  }
+ },
+ "M032": {
+  "desc": {
+   "from": "單片包裝，單片包裝方便按次使用，也適合旅行或外出時放進隨身行李。",
+   "to": "PICOMONTE Dcure+ 維他命與柑橘單片面膜，單片包裝方便按次使用，也適合旅行或外出時放進隨身行李；使用方式請以包裝標示為準。"
+  }
+ },
+ "M001": {
+  "desc": {
+   "from": "共10片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "毛穴撫子米萃保濕面膜，10片裝。潔膚後敷用，適合放進日常保養流程；使用方式請以包裝標示為準。"
+  }
+ },
+ "M003": {
+  "desc": {
+   "from": "共10片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "透明白肌保濕面膜 N，10片裝、美容液180mL。潔膚後敷用，適合日常保養；使用方式請以包裝標示為準。"
+  }
+ },
+ "M005": {
+  "desc": {
+   "from": "共7片，偏向潤澤感的日常面膜，適合依個人膚況安排使用。",
+   "to": "LuLuLun HYDRA EX 面膜，7片裝、美容液150mL，偏潤澤感。潔膚後敷用；使用方式請以包裝標示為準。"
+  },
+  "spec": {
+   "from": "7片 / エッセンス150mL",
+   "to": "7片／美容液150mL"
+  }
+ },
+ "M013": {
+  "desc": {
+   "from": "共7片，偏向潤澤感的日常面膜，適合依個人膚況安排使用。",
+   "to": "Quality 1st Ceramide100 面膜，7片裝，偏潤澤感的日常面膜。潔膚後敷用；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M008": {
+  "desc": {
+   "from": "共7片，夜間保養取向，請先閱讀包裝上的使用方式與注意事項。",
+   "to": "Saborino 晚安面膜 N，7片裝，夜間保養取向。請先閱讀包裝上的使用方式與注意事項。"
+  }
+ },
+ "M014": {
+  "desc": {
+   "from": "共7片，夜間保養取向，請先閱讀包裝上的使用方式與注意事項。",
+   "to": "Quality 1st Retinol100 面膜，7片裝，夜間保養取向。請先閱讀包裝上的使用方式與注意事項。"
+  }
+ },
+ "M012": {
+  "desc": {
+   "from": "共7片，適合偏好清爽保養感受的人，作為日常面膜使用。",
+   "to": "Quality 1st TEATREE100 面膜，7片裝，偏清爽的保養感受，適合作為日常面膜。潔膚後敷用；成分與使用方式請以包裝標示為準。"
+  }
+ },
+ "M017": {
+  "desc": {
+   "from": "共7片，適合偏好清爽保養感受的人，作為日常面膜使用。",
+   "to": "LuLuLun HYDRA AZ 面膜，7片裝，偏清爽的保養感受，適合作為日常面膜。潔膚後敷用；使用方式請以包裝標示為準。"
+  }
+ },
+ "M028": {
+  "desc": {
+   "from": "共30片，適合搭配日常保養使用，敷後可依包裝建議完成後續保養。",
+   "to": "THE STEM CELL FACIAL TREATMENT 保養面膜，30片裝。潔膚後敷用，敷後可依包裝建議完成後續保養。"
+  }
+ },
+ "M058": {
+  "desc": {
+   "from": "共30片，適合搭配日常保養使用，敷後可依包裝建議完成後續保養。",
+   "to": "NAVIS ENCHANTÉ 壬二酸系列面膜，30片裝。潔膚後敷用，敷後可依包裝建議完成後續保養。"
+  }
+ },
+ "M037": {
+  "desc": {
+   "from": "共50片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "VITAme VC200 維他命C面膜，50片裝。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M038": {
+  "desc": {
+   "from": "共50片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "VITAme VC100 與穀胱甘肽面膜，50片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M045": {
+  "desc": {
+   "from": "共31片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "EVERYYOU 薏仁保濕面膜，31片裝。潔膚後敷用，適合放進日常保養流程；使用方式請以包裝標示為準。"
+  }
+ },
+ "M048": {
+  "desc": {
+   "from": "共31片，適合放進日常保養流程，潔膚後敷用，讓保養多一段輕鬆的補水時間。",
+   "to": "EVERYYOU 菸鹼醯胺保濕面膜，31片裝。潔膚後敷用，適合放進日常保養流程；使用方式請以包裝標示為準。"
+  }
+ },
+ "M049": {
+  "desc": {
+   "from": "共30片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "MDSKIN LABO VC-100 保濕面膜，30片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M071": {
+  "desc": {
+   "from": "共30片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "Quality 1st THE DERMA VC100 面膜，30片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M053": {
+  "desc": {
+   "from": "共10片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "i-samu VEGANIA VC-100 保濕面膜，10片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M060": {
+  "desc": {
+   "from": "共10片，維他命C系列面膜，適合依個人保養習慣搭配使用；實際成分請參閱包裝。",
+   "to": "Make.iN VC-300 10Days 面膜，10片裝，維他命C系列。潔膚後敷用；實際成分請參閱包裝標示。"
+  }
+ },
+ "M054": {
+  "desc": {
+   "from": "共10片，適合搭配日常保養使用，敷後可依包裝建議完成後續保養。",
+   "to": "PICOMONTE 維他命與穀胱甘肽面膜，10片裝。潔膚後敷用，敷後可依包裝建議完成後續保養。"
+  }
+ },
+ "M055": {
+  "desc": {
+   "from": "共10片，適合搭配日常保養使用，敷後可依包裝建議完成後續保養。",
+   "to": "i-samu VEGANIA 補骨脂酚與 CICA 面膜，10片裝。潔膚後敷用，敷後可依包裝建議完成後續保養。"
+  }
+ },
+ "M064": {
+  "desc": {
+   "from": "共60片，眼周或局部貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。",
+   "to": "Make.iN NMN 保濕眼膜，60片裝。眼周或局部貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。"
+  }
+ },
+ "M072": {
+  "desc": {
+   "from": "共60片，眼周或局部貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。",
+   "to": "THE EXOSOME 局部保養眼膜，60片裝。眼周或局部貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。"
+  }
+ },
+ "M073": {
+  "desc": {
+   "from": "共120片，眼周或局部貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。",
+   "to": "EVERYYOU CICA 眼膜，120片裝。眼周貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。"
+  }
+ },
+ "M074": {
+  "desc": {
+   "from": "共120片，眼周或局部貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。",
+   "to": "EVERYYOU 菸鹼醯胺眼膜，120片裝。眼周貼片可依包裝指示敷用，使用時請避開眼睛與不適部位。"
+  }
+ },
+ "EXC002": {
+  "desc": {
+   "from": "日本長野產市田柿，半生タイプ、冷凍品。日本空運來台，11月陸續到貨。限量120包，售完為止。每包300g，單包NT$799含運。成分、保存方式與期限請以實際包裝標示為準。",
+   "to": "日本長野產市田柿，半生製法、冷凍品。日本空運來台，11月陸續到貨。限量120包，售完為止。每包300g，單包NT$799含運。成分、保存方式與期限請以實際包裝標示為準。"
+  }
+ },
+ "S064": {
+  "desc": {
+   "from": "白芝麻粉適合加入和え物、湯品或烘焙配方，使用前可依需要調勻。",
+   "to": "白芝麻粉適合加入涼拌菜、湯品或烘焙配方，使用前可依需要調勻。"
+  },
+  "weight": {
+   "from": null,
+   "to": 130
+  }
+ },
+ "COSTCO-16097": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "1,410g（47枚×6袋）"
+  },
+  "weight": {
+   "from": null,
+   "to": 1410
+  }
+ },
+ "COSTCO-47797": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "410g"
+  },
+  "weight": {
+   "from": null,
+   "to": 410
+  }
+ },
+ "COSTCO-48143": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "40g×5袋"
+  },
+  "weight": {
+   "from": null,
+   "to": 200
+  }
+ },
+ "COSTCO-51157": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "50個"
+  }
+ },
+ "COSTCO-58476": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "420g"
+  },
+  "weight": {
+   "from": null,
+   "to": 420
+  }
+ },
+ "COSTCO-63070": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "85枚"
+  }
+ },
+ "COSTCO-65177": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "13g×20袋"
+  },
+  "weight": {
+   "from": null,
+   "to": 260
+  }
+ },
+ "COSTCO-672678": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "2件組"
+  }
+ },
+ "COSTCO-71562": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "910g"
+  },
+  "weight": {
+   "from": null,
+   "to": 910
+  }
+ },
+ "COSTCO-75900": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "30g×3條"
+  },
+  "weight": {
+   "from": null,
+   "to": 90
+  }
+ },
+ "COSTCO-76143": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "100粒"
+  }
+ },
+ "COSTCO-77179": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "420g"
+  },
+  "weight": {
+   "from": null,
+   "to": 420
+  }
+ },
+ "COSTCO-79843": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "378g"
+  },
+  "weight": {
+   "from": null,
+   "to": 378
+  }
+ },
+ "COSTCO-80307": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "1,100g"
+  },
+  "weight": {
+   "from": null,
+   "to": 1100
+  }
+ },
+ "COSTCO-87306": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "530g"
+  },
+  "weight": {
+   "from": null,
+   "to": 530
+  }
+ },
+ "COSTCO-87415": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "37g×10袋"
+  },
+  "weight": {
+   "from": null,
+   "to": 370
+  }
+ },
+ "COSTCO-88726": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "10個"
+  }
+ },
+ "COSTCO-90421": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "345g（約84粒）"
+  },
+  "weight": {
+   "from": null,
+   "to": 345
+  }
+ },
+ "COSTCO-90437": {
+  "spec": {
+   "from": "好市多原裝販售單位",
+   "to": "360g"
+  },
+  "weight": {
+   "from": null,
+   "to": 360
+  }
+ },
+ "S065": {
+  "spec": {
+   "from": "板のり10枚",
+   "to": "10枚"
+  }
+ },
+ "S004": {
+  "weight": {
+   "from": null,
+   "to": 380
+  }
+ },
+ "S005": {
+  "weight": {
+   "from": null,
+   "to": 43
+  }
+ },
+ "S008": {
+  "weight": {
+   "from": null,
+   "to": 55
+  }
+ },
+ "S009": {
+  "weight": {
+   "from": null,
+   "to": 63
+  }
+ },
+ "S012": {
+  "weight": {
+   "from": null,
+   "to": 73
+  }
+ },
+ "S014": {
+  "weight": {
+   "from": null,
+   "to": 65
+  }
+ },
+ "S015": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S016": {
+  "weight": {
+   "from": null,
+   "to": 12
+  }
+ },
+ "S017": {
+  "weight": {
+   "from": null,
+   "to": 15
+  }
+ },
+ "S018": {
+  "weight": {
+   "from": null,
+   "to": 168
+  }
+ },
+ "S019": {
+  "weight": {
+   "from": null,
+   "to": 192
+  }
+ },
+ "S020": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S021": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S022": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S023": {
+  "weight": {
+   "from": null,
+   "to": 300
+  }
+ },
+ "S024": {
+  "weight": {
+   "from": null,
+   "to": 120
+  }
+ },
+ "S025": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S026": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S027": {
+  "weight": {
+   "from": null,
+   "to": 4
+  }
+ },
+ "S028": {
+  "weight": {
+   "from": null,
+   "to": 50
+  }
+ },
+ "S029": {
+  "weight": {
+   "from": null,
+   "to": 175
+  }
+ },
+ "S030": {
+  "weight": {
+   "from": null,
+   "to": 175
+  }
+ },
+ "S031": {
+  "weight": {
+   "from": null,
+   "to": 43
+  }
+ },
+ "S032": {
+  "weight": {
+   "from": null,
+   "to": 227
+  }
+ },
+ "S033": {
+  "weight": {
+   "from": null,
+   "to": 150
+  }
+ },
+ "S034": {
+  "weight": {
+   "from": null,
+   "to": 150
+  }
+ },
+ "S035": {
+  "weight": {
+   "from": null,
+   "to": 300
+  }
+ },
+ "S036": {
+  "weight": {
+   "from": null,
+   "to": 300
+  }
+ },
+ "S037": {
+  "weight": {
+   "from": null,
+   "to": 200
+  }
+ },
+ "S038": {
+  "weight": {
+   "from": null,
+   "to": 135
+  }
+ },
+ "S039": {
+  "weight": {
+   "from": null,
+   "to": 200
+  }
+ },
+ "S040": {
+  "weight": {
+   "from": null,
+   "to": 200
+  }
+ },
+ "S041": {
+  "weight": {
+   "from": null,
+   "to": 60
+  }
+ },
+ "S042": {
+  "weight": {
+   "from": null,
+   "to": 60
+  }
+ },
+ "S043": {
+  "weight": {
+   "from": null,
+   "to": 60
+  }
+ },
+ "S044": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S045": {
+  "weight": {
+   "from": null,
+   "to": 100
+  }
+ },
+ "S046": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S047": {
+  "weight": {
+   "from": null,
+   "to": 120
+  }
+ },
+ "S048": {
+  "weight": {
+   "from": null,
+   "to": 85
+  }
+ },
+ "S050": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S051": {
+  "weight": {
+   "from": null,
+   "to": 50
+  }
+ },
+ "S053": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S054": {
+  "weight": {
+   "from": null,
+   "to": 98
+  }
+ },
+ "S055": {
+  "weight": {
+   "from": null,
+   "to": 120
+  }
+ },
+ "S056": {
+  "weight": {
+   "from": null,
+   "to": 440
+  }
+ },
+ "S057": {
+  "weight": {
+   "from": null,
+   "to": 63
+  }
+ },
+ "S058": {
+  "weight": {
+   "from": null,
+   "to": 120
+  }
+ },
+ "S059": {
+  "weight": {
+   "from": null,
+   "to": 90
+  }
+ },
+ "S060": {
+  "weight": {
+   "from": null,
+   "to": 100
+  }
+ },
+ "S061": {
+  "weight": {
+   "from": null,
+   "to": 11
+  }
+ },
+ "S062": {
+  "weight": {
+   "from": null,
+   "to": 45
+  }
+ },
+ "S063": {
+  "weight": {
+   "from": null,
+   "to": 25
+  }
+ },
+ "S066": {
+  "weight": {
+   "from": null,
+   "to": 200
+  }
+ },
+ "S067": {
+  "weight": {
+   "from": null,
+   "to": 500
+  }
+ },
+ "S068": {
+  "weight": {
+   "from": null,
+   "to": 250
+  }
+ },
+ "S069": {
+  "weight": {
+   "from": null,
+   "to": 290
+  }
+ },
+ "S070": {
+  "weight": {
+   "from": null,
+   "to": 270
+  }
+ },
+ "S071": {
+  "weight": {
+   "from": null,
+   "to": 400
+  }
+ },
+ "S072": {
+  "weight": {
+   "from": null,
+   "to": 180
+  }
+ },
+ "S073": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S074": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S075": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S076": {
+  "weight": {
+   "from": null,
+   "to": 80
+  }
+ },
+ "S077": {
+  "weight": {
+   "from": null,
+   "to": 37
+  }
+ },
+ "S078": {
+  "weight": {
+   "from": null,
+   "to": 28
+  }
+ },
+ "S079": {
+  "weight": {
+   "from": null,
+   "to": 8
+  }
+ },
+ "S080": {
+  "weight": {
+   "from": null,
+   "to": 5
+  }
+ },
+ "S081": {
+  "weight": {
+   "from": null,
+   "to": 12
+  }
+ },
+ "S082": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S083": {
+  "weight": {
+   "from": null,
+   "to": 43
+  }
+ },
+ "S084": {
+  "weight": {
+   "from": null,
+   "to": 40
+  }
+ },
+ "S085": {
+  "weight": {
+   "from": null,
+   "to": 38
+  }
+ },
+ "S086": {
+  "weight": {
+   "from": null,
+   "to": 38
+  }
+ },
+ "S087": {
+  "weight": {
+   "from": null,
+   "to": 38
+  }
+ },
+ "S088": {
+  "weight": {
+   "from": null,
+   "to": 38
+  }
+ },
+ "S089": {
+  "weight": {
+   "from": null,
+   "to": 38
+  }
+ },
+ "S090": {
+  "weight": {
+   "from": null,
+   "to": 20
+  }
+ },
+ "S091": {
+  "weight": {
+   "from": null,
+   "to": 15
+  }
+ },
+ "S092": {
+  "weight": {
+   "from": null,
+   "to": 13
+  }
+ },
+ "S093": {
+  "weight": {
+   "from": null,
+   "to": 24
+  }
+ },
+ "S094": {
+  "weight": {
+   "from": null,
+   "to": 9
+  }
+ },
+ "S095": {
+  "weight": {
+   "from": null,
+   "to": 10
+  }
+ },
+ "S096": {
+  "weight": {
+   "from": null,
+   "to": 12
+  }
+ },
+ "S097": {
+  "weight": {
+   "from": null,
+   "to": 23
+  }
+ },
+ "S098": {
+  "weight": {
+   "from": null,
+   "to": 16
+  }
+ },
+ "S099": {
+  "weight": {
+   "from": null,
+   "to": 14
+  }
+ },
+ "S100": {
+  "weight": {
+   "from": null,
+   "to": 43
+  }
+ },
+ "S101": {
+  "weight": {
+   "from": null,
+   "to": 90
+  }
+ },
+ "S102": {
+  "weight": {
+   "from": null,
+   "to": 43
+  }
+ }
+};
 async function runShopMigrations(db: Pool) {
   const conn = await db.getConnection();
   try {
@@ -498,6 +1625,53 @@ async function runShopMigrations(db: Pool) {
         await conn.execute(
           "UPDATE line_shop_products SET active=FALSE WHERE id IN ('COSTCO-88665','COSTCO-76872')"
         );
+      }
+    );
+
+    // 2026-11-12 稽核第三批（內容工程）：品名／說明／規格／重量補齊。
+    // data_json 與 admin_json 哪一層的值等於 from 就改哪一層，與第一批
+    // 相同原則（catalog() 合併時 admin_json 優先，只改一層會被蓋回去）。
+    // desc 在前台另有種子目錄（customerDescriptions）優先於 data_json，
+    // 種子檔已同步更新；這裡把 DB 兩層也對齊，後台與訂單畫面才一致。
+    await onceWithLock(
+      conn,
+      "line_shop_batch3_content_2026_11_12",
+      BATCH3_CONTENT_MIGRATION,
+      async () => {
+        for (const [id, fields] of Object.entries(BATCH3_CHANGES)) {
+          const [rows] = await conn.query<RowDataPacket[]>(
+            "SELECT data_json,admin_json FROM line_shop_products WHERE id=?",
+            [id]
+          );
+          const row = rows[0];
+          if (!row) continue;
+          const applyFields = (obj: Record<string, unknown>) => {
+            let changed = false;
+            for (const [field, change] of Object.entries(fields)) {
+              if (!change) continue;
+              const current = obj[field] ?? null;
+              if (current === change.from) {
+                obj[field] = change.to;
+                changed = true;
+              }
+            }
+            return changed;
+          };
+          const stored = parsed<Record<string, unknown>>(row.data_json);
+          if (applyFields(stored))
+            await conn.execute(
+              "UPDATE line_shop_products SET data_json=? WHERE id=?",
+              [JSON.stringify(stored), id]
+            );
+          if (row.admin_json) {
+            const admin = parsed<Record<string, unknown>>(row.admin_json);
+            if (applyFields(admin))
+              await conn.execute(
+                "UPDATE line_shop_products SET admin_json=? WHERE id=?",
+                [JSON.stringify(admin), id]
+              );
+          }
+        }
       }
     );
   } finally {
