@@ -165,7 +165,7 @@ const translations = {
     // v3 · marquee
     'marquee.0': '🎌 6 月限定：滿 NT$3,000 免運費，再送日本介護毛巾',
     'marquee.1': '🚚 大阪倉庫直送・最快 7 個工作天到府',
-    'marquee.2': '💬 中日雙語客服：line@rokaizumi（週一至週六 09:00 - 19:00）',
+    'marquee.2': '💬 中日雙語客服：LINE @129jbsqh（週一至週五 10:00 - 16:00）',
     'marquee.3': '🏥 機構採購享月結與專屬報價，立即洽詢企業合作',
     // v3 · nav
     'nav.guides': '選品指南',
@@ -296,7 +296,7 @@ const translations = {
     'news.success': '感謝訂閱，優惠券已寄至您的 Email',
     // v3 · footer
     'footer.brand.address': '532-0011 大阪市淀川区西中島六丁目10番1の502\nストークマンション西中島',
-    'footer.brand.contact': '中日雙語客服：service@rokaizumi-tw.jp\nLINE 客服：@rokaizumi（週一至週六 09:00 - 19:00）',
+    'footer.brand.contact': '中日雙語客服：service@rokaizumi-tw.jp\nLINE 客服：@129jbsqh（週一至週五 10:00 - 16:00）',
     'footer.col1.title': '商品分類',
     'footer.col1.1': '輪椅・移乗',
     'footer.col1.2': '介護床・寢具',
@@ -319,7 +319,7 @@ const translations = {
     'footer.col3.5': '聯絡我們',
     'footer.col3.6': '特定商取引法表記',
     'footer.copyright': '© 2026 ろかいずみ合同会社 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': '法人番号 1234567890123 . 古物商許可 大阪府公安委員会 第612345678号',
+    'footer.legal': '法人番号 3120003031622 . 古物商許可 大阪府公安委員会 第612345678号',
     // v3 · mobile
     'mobile.line': '💬 LINE 客服',
     'mobile.shop': '立刻選購 →',
@@ -727,7 +727,7 @@ const translations = {
     // v3 · marquee
     'marquee.0': '🎌 June Special: Free shipping over NT$3,000 plus a free Japanese care towel',
     'marquee.1': '🚚 Direct from Osaka warehouse, as fast as 7 business days',
-    'marquee.2': '💬 Bilingual customer support: line@rokaizumi (Mon-Sat 09:00-19:00)',
+    'marquee.2': '💬 Bilingual customer support: LINE @129jbsqh (Mon-Fri 10:00-16:00)',
     'marquee.3': '🏥 Institutional buyers get monthly invoicing and dedicated quotes',
     // v3 · nav
     'nav.guides': 'Buying Guides',
@@ -858,7 +858,7 @@ const translations = {
     'news.success': 'Thanks! Your coupon is on its way to your inbox.',
     // v3 · footer
     'footer.brand.address': '532-0011 Osaka, Yodogawa Ward, Nishinakajima 6-10-1, Apt 502\nStork Mansion Nishinakajima',
-    'footer.brand.contact': 'Bilingual support: service@rokaizumi-tw.jp\nLINE: @rokaizumi (Mon-Sat 09:00-19:00)',
+    'footer.brand.contact': 'Bilingual support: service@rokaizumi-tw.jp\nLINE: @129jbsqh (Mon-Fri 10:00-16:00)',
     'footer.col1.title': 'Categories',
     'footer.col1.1': 'Wheelchairs',
     'footer.col1.2': 'Care Beds',
@@ -881,7 +881,7 @@ const translations = {
     'footer.col3.5': 'Contact',
     'footer.col3.6': 'Legal Notice',
     'footer.copyright': '© 2026 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': 'Corporation # 1234567890123 . Antique Dealer License: Osaka Pref. Public Safety Commission # 612345678',
+    'footer.legal': 'Corporation # 3120003031622 . Antique Dealer License: Osaka Pref. Public Safety Commission # 612345678',
     // v3 · mobile
     'mobile.line': '💬 LINE Support',
     'mobile.shop': 'Shop Now →',
@@ -1293,7 +1293,7 @@ const translations = {
     // v3 · marquee
     'marquee.0': '🎌 6 月限定：NT$3,000 以上で送料無料、介護タオル進呈',
     'marquee.1': '🚚 大阪倉庫から最短 7 営業日でお届け',
-    'marquee.2': '💬 日中バイリンガル対応：line@rokaizumi（月-土 09:00-19:00）',
+    'marquee.2': '💬 日中バイリンガル対応：LINE @129jbsqh（月-金 10:00-16:00）',
     'marquee.3': '🏥 法人購入は月締めと専用見積り、企業協力をお問い合わせ',
     // v3 · nav
     'nav.guides': '商品ガイド',
@@ -1424,7 +1424,7 @@ const translations = {
     'news.success': 'ご登録ありがとうございます、クーポンをメールでお送りしました',
     // v3 · footer
     'footer.brand.address': '〒532-0011 大阪市淀川区西中島六丁目10番1の502\nストークマンション西中島',
-    'footer.brand.contact': '日中バイリンガル対応：service@rokaizumi-tw.jp\nLINE サポート：@rokaizumi（月-土 09:00-19:00）',
+    'footer.brand.contact': '日中バイリンガル対応：service@rokaizumi-tw.jp\nLINE サポート：@129jbsqh（月-金 10:00-16:00）',
     'footer.col1.title': '商品カテゴリー',
     'footer.col1.1': '車椅子・移乗',
     'footer.col1.2': '介護ベッド・寝具',
@@ -1447,7 +1447,7 @@ const translations = {
     'footer.col3.5': 'お問い合わせ',
     'footer.col3.6': '特定商取引法に基づく表記',
     'footer.copyright': '© 2026 ろかいずみ合同会社 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': '法人番号 1234567890123 . 古物商許可 大阪府公安委員会 第612345678号',
+    'footer.legal': '法人番号 3120003031622 . 古物商許可 大阪府公安委員会 第612345678号',
     // v3 · mobile
     'mobile.line': '💬 LINE 相談',
     'mobile.shop': '今すぐ購入 →',
@@ -1859,7 +1859,7 @@ const translations = {
     // v3 · marquee
     'marquee.0': '🎌 6 月限定：满 NT$3,000 免运费，再送日本介护毛巾',
     'marquee.1': '🚚 大阪仓库直送・最快 7 个工作日到府',
-    'marquee.2': '💬 中日双语客服：line@rokaizumi（周一至周六 09:00 - 19:00）',
+    'marquee.2': '💬 中日双语客服：LINE @129jbsqh（周一至周五 10:00 - 16:00）',
     'marquee.3': '🏥 机构采购享月结与专属报价，立即洽询企业合作',
     // v3 · nav
     'nav.guides': '选品指南',
@@ -1990,7 +1990,7 @@ const translations = {
     'news.success': '感谢订阅，优惠券已寄至您的 Email',
     // v3 · footer
     'footer.brand.address': '532-0011 大阪市淀川区西中島六丁目10番1の502\nストークマンション西中島',
-    'footer.brand.contact': '中日双语客服：service@rokaizumi-tw.jp\nLINE 客服：@rokaizumi（周一至周六 09:00 - 19:00）',
+    'footer.brand.contact': '中日双语客服：service@rokaizumi-tw.jp\nLINE 客服：@129jbsqh（周一至周五 10:00 - 16:00）',
     'footer.col1.title': '商品分类',
     'footer.col1.1': '轮椅・移乘',
     'footer.col1.2': '介护床・寝具',
@@ -2013,7 +2013,7 @@ const translations = {
     'footer.col3.5': '联系我们',
     'footer.col3.6': '特定商取引法表记',
     'footer.copyright': '© 2026 ろかいずみ合同会社 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': '法人番号 1234567890123 . 古物商许可 大阪府公安委员会 第612345678号',
+    'footer.legal': '法人番号 3120003031622 . 古物商许可 大阪府公安委员会 第612345678号',
     // v3 · mobile
     'mobile.line': '💬 LINE 客服',
     'mobile.shop': '立刻选购 →',
