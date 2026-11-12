@@ -319,7 +319,7 @@ const translations = {
     'footer.col3.5': '聯絡我們',
     'footer.col3.6': '特定商取引法表記',
     'footer.copyright': '© 2026 ろかいずみ合同会社 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': '法人番号 3120003031622 . 古物商許可 大阪府公安委員会 第612345678号',
+    'footer.legal': '法人番号 3120003031622',
     // v3 · mobile
     'mobile.line': '💬 LINE 客服',
     'mobile.shop': '立刻選購 →',
@@ -881,7 +881,7 @@ const translations = {
     'footer.col3.5': 'Contact',
     'footer.col3.6': 'Legal Notice',
     'footer.copyright': '© 2026 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': 'Corporation # 3120003031622 . Antique Dealer License: Osaka Pref. Public Safety Commission # 612345678',
+    'footer.legal': 'Corporation # 3120003031622',
     // v3 · mobile
     'mobile.line': '💬 LINE Support',
     'mobile.shop': 'Shop Now →',
@@ -1447,7 +1447,7 @@ const translations = {
     'footer.col3.5': 'お問い合わせ',
     'footer.col3.6': '特定商取引法に基づく表記',
     'footer.copyright': '© 2026 ろかいずみ合同会社 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': '法人番号 3120003031622 . 古物商許可 大阪府公安委員会 第612345678号',
+    'footer.legal': '法人番号 3120003031622',
     // v3 · mobile
     'mobile.line': '💬 LINE 相談',
     'mobile.shop': '今すぐ購入 →',
@@ -2013,7 +2013,7 @@ const translations = {
     'footer.col3.5': '联系我们',
     'footer.col3.6': '特定商取引法表记',
     'footer.copyright': '© 2026 ろかいずみ合同会社 Rokaizumi LLC. All rights reserved.',
-    'footer.legal': '法人番号 3120003031622 . 古物商许可 大阪府公安委员会 第612345678号',
+    'footer.legal': '法人番号 3120003031622',
     // v3 · mobile
     'mobile.line': '💬 LINE 客服',
     'mobile.shop': '立刻选购 →',
