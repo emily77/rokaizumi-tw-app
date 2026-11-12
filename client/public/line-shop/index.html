@@ -14,7 +14,7 @@
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23102c42'/%3E%3Ctext x='16' y='23' text-anchor='middle' fill='white' font-size='23' font-family='serif'%3ER%3C/text%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="style.css?v=20261112-batch5" />
+    <link rel="stylesheet" href="style.css?v=20261112-batch7" />
   </head>
   <body>
     <div class="notice">
@@ -25,7 +25,7 @@
         <div class="brand">ROKA IZUMI<small>ろかいずみ合同会社</small></div>
         <span class="pill">日本直寄台灣 · 繁體中文</span>
       </div>
-      <nav aria-label="商店分類">
+      <nav id="catalog-nav" aria-label="商店分類" class="hidden">
         <span class="nav-caption">選擇商品分類</span>
         <div class="catalog-switch">
           <button class="active" data-tab="costco" aria-label="日本好市多">日本好市多<small>28 款</small></button><button data-tab="supermarket" aria-label="日本超市必買">日本超市必買<small>101 款</small></button><button data-tab="shop" aria-label="面膜選物">面膜選物<small>68 款</small></button><button data-tab="exclusive" aria-label="專屬賣場">專屬賣場<small>2 款</small></button><button data-tab="ai" aria-label="AI PC 周邊">AI PC 周邊<small>1 款</small></button>
@@ -138,7 +138,7 @@
       </p>
       <p><a href="policies.html">商店資料・購物條款與隱私說明</a></p>
       <footer>
-        ろかいずみ合同会社（ROKA IZUMI）<br />日本面膜・日本超市必買・日本好市多・專屬賣場・AI PC 周邊
+        ろかいずみ合同会社（ROKA IZUMI）<br />日本面膜・日本超市必買・日本好市多・AI PC 周邊
         · 日本嚴選商店<br /><a href="mailto:info@rokaizumi-tw.jp"
           >info@rokaizumi-tw.jp</a
         >
@@ -210,7 +210,7 @@
             document.querySelector(".notice").textContent =
               "Stripe 測試環境｜不會實際扣款";
           const js = document.createElement("script");
-          js.src = "app.js?v=20261112-batch6";
+          js.src = "app.js?v=20261112-batch7";
           document.body.appendChild(js);
         } catch {
           document.querySelector(".notice").textContent =

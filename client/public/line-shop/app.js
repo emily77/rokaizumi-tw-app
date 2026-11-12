@@ -428,6 +428,10 @@ renderExclusive();
 renderAi();
 renderCart();
 showTab(currentCatalog);
+// 分類導覽在 index.html 預設隱藏（.hidden），避免資料載入前先閃出靜態寫死的
+// 舊分類與款數；即時資料的第一輪渲染（CATALOG_TABS、空分類隱藏、計數）都
+// 完成後才在這裡顯示，之後有商品重新上架的分類也會照原邏輯自動出現。
+$("catalog-nav")?.classList.remove("hidden");
 // 後台每一列都有「前台商品頁」連結，指向 ?p=<編號>；帶這個參數就直接切到
 // 該商品所屬分區並打開詳情，客人與店主看到的內容完全一樣。
 const linked = new URLSearchParams(location.search).get("p");
