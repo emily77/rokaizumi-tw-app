@@ -90,6 +90,7 @@ const excluded = new Set([
 const STOCK_RESET_MIGRATION = "2026-10-14-stock-10";
 const SELF_HOSTED_IMAGES_MIGRATION = "2026-10-30-self-hosted-images";
 const FREE_SHIPPING_MIGRATION = "2026-10-31-free-shipping-products";
+const BATCH1_FIXES_MIGRATION = "2026-11-12-batch1-fixes";
 let pool: Pool | undefined;
 let initialization: Promise<void> | undefined;
 async function database() {
@@ -459,8 +460,59 @@ async function runShopMigrations(db: Pool) {
         }
       }
     );
+    // 2026-11-12 稽核第一批修正：
+    // 1) EXC001 的公開品名混入客戶名「-鳳敏」。data_json 與 admin_json
+    //    哪一層有就改哪一層 — catalog() 合併時 admin_json 優先，只改
+    //    data_json 會被後台覆寫蓋回來。
+    // 2) COSTCO-88665、COSTCO-76872 沒有商品圖，先下架（active=FALSE，
+    //    非刪除；補圖後在後台重新上架即可）。
+    await onceWithLock(
+      conn,
+      "line_shop_batch1_fixes_2026_11_12",
+      BATCH1_FIXES_MIGRATION,
+      async () => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          "SELECT data_json,admin_json FROM line_shop_products WHERE id='EXC001'"
+        );
+        const row = rows[0];
+        if (row) {
+          const cleanName = "くらしリズム 衣物去漬片 10盒組";
+          const stored = parsed<ShopProduct>(row.data_json);
+          if (
+            typeof stored.name === "string" &&
+            stored.name.includes("鳳敏")
+          )
+            await conn.execute(
+              "UPDATE line_shop_products SET data_json=? WHERE id='EXC001'",
+              [JSON.stringify({ ...stored, name: cleanName })]
+            );
+          if (row.admin_json) {
+            const admin = parsed<ProductContent>(row.admin_json);
+            if (typeof admin.name === "string" && admin.name.includes("鳳敏"))
+              await conn.execute(
+                "UPDATE line_shop_products SET admin_json=? WHERE id='EXC001'",
+                [JSON.stringify({ ...admin, name: cleanName })]
+              );
+          }
+        }
+        await conn.execute(
+          "UPDATE line_shop_products SET active=FALSE WHERE id IN ('COSTCO-88665','COSTCO-76872')"
+        );
+      }
+    );
   } finally {
     conn.release();
+  }
+}
+const MARKETPLACE_SOURCE_SUFFIXES = ["rakuten.co.jp", "shopping.yahoo.co.jp"];
+function isMarketplaceSource(url: string) {
+  try {
+    const host = new URL(url).hostname;
+    return MARKETPLACE_SOURCE_SUFFIXES.some(
+      suffix => host === suffix || host.endsWith("." + suffix)
+    );
+  } catch {
+    return false;
   }
 }
 async function catalog(db: Pool | PoolConnection) {
@@ -504,6 +556,13 @@ async function catalog(db: Pool | PoolConnection) {
         delete publicProduct.source;
       }
       if (product.id === "EXC002") delete publicProduct.source;
+      // 「查看原廠商品資料」只連原廠官網；樂天、Yahoo 購物等通路賣場
+      // 會讓客人直接比價，前台不送出（原始連結保留在資料庫供後台參考）。
+      if (
+        typeof publicProduct.source === "string" &&
+        isMarketplaceSource(publicProduct.source)
+      )
+        delete publicProduct.source;
       return publicProduct;
     });
 }
