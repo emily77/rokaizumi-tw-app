@@ -96,6 +96,7 @@ const STOCK_TOPUP_MIGRATION = "2026-11-12-stock-topup-10";
 const EXCLUSIVE_DELIST_MIGRATION = "2026-11-12-exclusive-delist";
 const DONKI_DEADLINE_MIGRATION = "2026-11-12-donki-deadline-copy";
 const DONKI_OFFICIAL_IMAGES_MIGRATION = "2026-11-12-donki-official-images";
+const TUNEWAVE_MODEL_MIGRATION = "2026-11-12-tunewave-model-dkod";
 // 2026-11-12 唐吉訶德商品圖換成官方／原廠圖：新圖放在 -v2 檔名（舊網址
 // 有 7 天快取，同名覆寫客人短期內還是看到舊的傳單裁圖），這裡把資料庫
 // 兩層的 image 從舊路徑換到 -v2；目前值不等於舊路徑就不動（後台若已
@@ -1841,6 +1842,56 @@ async function runShopMigrations(db: Pool) {
                 [JSON.stringify({ ...admin, image: to }), id]
               );
           }
+        }
+      }
+    );
+
+    // 2026-11-12 DON-13-021（tunewave 耳機）型號更正：種子目錄與傳單
+    // 初稿把型號寫成「DKDD-01」，官方型號是「DKOD-01」（傳單印刷與
+    // 原廠資料皆為 DKOD-01）。data_json／admin_json 兩層所有字串欄位
+    // 逐一掃描替換（name／jp／desc／spec 等哪裡有就改哪裡，與第三批
+    // 相同原則）；沒有 DKDD-01 就不寫入，重跑無副作用。種子目錄檔
+    // 已同步更正（前台 customerDescriptions 讀種子檔）。只動這一件。
+    await onceWithLock(
+      conn,
+      "line_shop_tunewave_model_2026_11_12",
+      TUNEWAVE_MODEL_MIGRATION,
+      async () => {
+        const id = "DON-13-021";
+        const [rows] = await conn.query<RowDataPacket[]>(
+          "SELECT data_json,admin_json FROM line_shop_products WHERE id=?",
+          [id]
+        );
+        const row = rows[0];
+        if (!row) return;
+        const fixLayer = (
+          obj: Record<string, unknown>
+        ): Record<string, unknown> | null => {
+          let changed = false;
+          const next: Record<string, unknown> = { ...obj };
+          for (const [key, value] of Object.entries(next)) {
+            if (typeof value === "string" && value.includes("DKDD-01")) {
+              next[key] = value.split("DKDD-01").join("DKOD-01");
+              changed = true;
+            }
+          }
+          return changed ? next : null;
+        };
+        const stored = parsed<Record<string, unknown>>(row.data_json);
+        const nextStored = fixLayer(stored);
+        if (nextStored)
+          await conn.execute(
+            "UPDATE line_shop_products SET data_json=? WHERE id=?",
+            [JSON.stringify(nextStored), id]
+          );
+        if (row.admin_json) {
+          const admin = parsed<Record<string, unknown>>(row.admin_json);
+          const nextAdmin = fixLayer(admin);
+          if (nextAdmin)
+            await conn.execute(
+              "UPDATE line_shop_products SET admin_json=? WHERE id=?",
+              [JSON.stringify(nextAdmin), id]
+            );
         }
       }
     );
