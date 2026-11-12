@@ -297,5 +297,40 @@ describe("蠟燭訂單通知信", () => {
     }
     expect(savedOrders).toHaveLength(count);
   });
+  it("澳洲限定：州與郵遞區號對不上、海外地名、非澳洲國家欄一律拒絕，不會存單", async () => {
+    const count = savedOrders.length;
+    const invalidOrders = [
+      { ...order, state: "NSW", postcode: "3000" },
+      { ...order, state: "VIC", postcode: "2000" },
+      { ...order, suburb: "London", street: "10 Downing Street", state: "NSW", postcode: "2000" },
+      { ...order, street: "1 High Street, United Kingdom" },
+      { ...order, country: "GB" },
+      { ...order, country: "United Kingdom" },
+    ];
+    for (const invalid of invalidOrders) {
+      const response = await fetch(`http://127.0.0.1:${port}/api/candles/orders`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(invalid),
+      });
+      expect(response.status).toBe(400);
+    }
+    expect(savedOrders).toHaveLength(count);
+  });
+  it("澳洲限定：合法的州與郵編組合與相似地名不會被誤擋（通過地址驗證後才走到付款方式檢查）", async () => {
+    const validAddresses = [
+      { state: "NT", postcode: "0800", suburb: "Darwin" },
+      { state: "ACT", postcode: "2618" },
+      { state: "WA", postcode: "6798", suburb: "Christmas Island" },
+      { state: "NSW", postcode: "2753", suburb: "Londonderry" },
+      { state: "NSW", postcode: "2105", suburb: "Scotland Island" },
+      { state: "QLD", postcode: "4064", suburb: "Milton", street: "1 London Road" },
+      { country: "Australia" },
+    ];
+    for (const address of validAddresses) {
+      const response = await fetch(`http://127.0.0.1:${port}/api/candles/orders`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...order, ...address }),
+      });
+      expect(response.status).toBe(503);
+    }
+  });
 
 });

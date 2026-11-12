@@ -595,6 +595,34 @@ const notificationTimer = setInterval(retryEmails, 10 * 60 * 1000);
 notificationTimer.unref();
 setTimeout(retryEmails, 15_000).unref();
 
+// 澳洲限定配送：各州／領地對應的郵遞區號區間（澳洲郵政公開區間）。
+const AU_POSTCODE_RANGES: Record<string, [number, number][]> = {
+  NSW: [[1000, 2599], [2619, 2899], [2921, 2999]],
+  ACT: [[2600, 2618], [2900, 2920]],
+  VIC: [[3000, 3999], [8000, 8999]],
+  QLD: [[4000, 4999], [9000, 9999]],
+  SA: [[5000, 5999]],
+  WA: [[6000, 6999]],
+  TAS: [[7000, 7999]],
+  NT: [[800, 999]],
+};
+const postcodeMatchesState = (state: string, postcode: string): boolean => {
+  const ranges = AU_POSTCODE_RANGES[state.toUpperCase()];
+  if (!ranges) return false;
+  const value = Number.parseInt(postcode, 10);
+  return ranges.some(([low, high]) => value >= low && value <= high);
+};
+// 海外地址攔截：只查強訊號詞，避免誤傷澳洲本地地名——
+// 街道欄查國家詞（澳洲有 London Road 這類路名，所以街道不查 London）；
+// 城市欄再加上 London 本身（澳洲沒有叫 London 的城市；Londonderry 是雪梨郊區，詞邊界不會誤傷；
+// Scotland Island 同理不在城市攔截詞內）。
+const hasWholeTerm = (text: string, terms: string[]): boolean =>
+  terms.some(term => new RegExp(`\\b${term}\\b`, "i").test(text));
+const OVERSEAS_STREET_TERMS = ["united kingdom", "great britain", "northern ireland", "uk"];
+const OVERSEAS_SUBURB_TERMS = [...OVERSEAS_STREET_TERMS, "england", "london"];
+const looksOverseas = (street: string, suburb: string): boolean =>
+  hasWholeTerm(street, OVERSEAS_STREET_TERMS) || hasWholeTerm(suburb, OVERSEAS_SUBURB_TERMS);
+
 router.post("/", async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   if (req.get("content-type")?.split(";")[0] !== "application/json") return res.status(415).json({ error: "Invalid request." });
@@ -608,7 +636,6 @@ router.post("/", async (req, res) => {
   const note = body.note === "" || body.note === undefined ? "" : field(body.note, 1000);
   if (body.paymentMethod !== undefined && !["card", "paypal", "bank_transfer"].includes(body.paymentMethod)) return res.status(400).json({ error: "Please choose an available payment method." });
   const paymentMethod = parsePaymentMethod(body.paymentMethod);
-  if (!onlinePaymentAvailable(paymentMethod)) return res.status(503).json({ error: "This payment method is temporarily unavailable. Please choose another payment method." });
   const items = body.items;
   const db = database();
   if (!db) return res.status(503).json({ error: "Orders are temporarily unavailable. Please try again later." });
@@ -617,6 +644,17 @@ router.post("/", async (req, res) => {
   if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !phone || !street || !suburb || !state || !["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"].includes(state.toUpperCase()) || !/^\d{4}$/.test(postcode ?? "") || note === null || body.importConfirmed !== "on" || !Array.isArray(items) || items.length !== 5 || !items.every((n: unknown) => Number.isInteger(n) && allowed.has(n as number)) || new Set(items).size !== 5) {
     return res.status(400).json({ error: "Please check your five designs and all required delivery details." });
   }
+  // 澳洲限定：先檢查配送範圍並給買家明確原因，通過後才檢查付款方式可用性。
+  if (body.country !== undefined && !["AU", "Australia"].includes(String(body.country).trim())) {
+    return res.status(400).json({ error: "We deliver to Australia only. For delivery to another country, please email rokaizumi@gmail.com for a shipping quote instead of ordering here." });
+  }
+  if (looksOverseas(street!, suburb!)) {
+    return res.status(400).json({ error: "That delivery address looks like it is outside Australia. We deliver to Australia only — for another country, please email rokaizumi@gmail.com for a shipping quote instead of ordering here." });
+  }
+  if (!postcodeMatchesState(state!, postcode!)) {
+    return res.status(400).json({ error: "That postcode does not match the selected state. Please check your Australian delivery address." });
+  }
+  if (!onlinePaymentAvailable(paymentMethod)) return res.status(503).json({ error: "This payment method is temporarily unavailable. Please choose another payment method." });
   const orderAmount = (await candlePrices(db)).aud;
   const id = `RI-${randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()}`;
   try {
