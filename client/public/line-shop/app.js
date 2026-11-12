@@ -5,10 +5,21 @@ const COSTCO = window.COSTCO_PRODUCTS;
 const EXCLUSIVE = window.EXCLUSIVE_PRODUCTS;
 const AI = window.AI_PRODUCTS;
 const P = [...COSTCO, ...GROCERY, ...MASKS, ...EXCLUSIVE, ...AI];
-const CATALOG_TABS = ["costco", "supermarket", "shop", "exclusive", "ai"];
+const CATALOG_LISTS = {
+  costco: COSTCO,
+  supermarket: GROCERY,
+  shop: MASKS,
+  exclusive: EXCLUSIVE,
+  ai: AI,
+};
+// 空分類（目前沒有上架商品）不列入可切換的分頁：分頁按鈕與區塊都隱藏，
+// 商品重新上架後自動恢復。顯示與否一律由即時商品資料決定，不寫死分類。
+const CATALOG_TABS = Object.keys(CATALOG_LISTS).filter(
+  tab => CATALOG_LISTS[tab].length > 0
+);
 function catalogFromHash() {
   const hash = location.hash.slice(1);
-  return CATALOG_TABS.includes(hash) ? hash : "costco";
+  return CATALOG_TABS.includes(hash) ? hash : (CATALOG_TABS[0] ?? "costco");
 }
 let currentCatalog = catalogFromHash();
 let groceryCategory = "全部";
@@ -42,6 +53,13 @@ function saveCart() {
 }
 const MIN_ORDER_TWD = 2000;
 const $ = id => document.getElementById(id);
+for (const tab of Object.keys(CATALOG_LISTS)) {
+  if (CATALOG_TABS.includes(tab)) continue;
+  $(tab)?.classList.add("hidden");
+  document
+    .querySelectorAll(`[data-tab="${tab}"]`)
+    .forEach(b => b.classList.add("hidden"));
+}
 const soldOut = p => !(p.stock > 0);
 const buyButton = p =>
   soldOut(p) || p.price === null

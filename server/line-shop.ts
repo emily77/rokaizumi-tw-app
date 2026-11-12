@@ -93,6 +93,7 @@ const FREE_SHIPPING_MIGRATION = "2026-10-31-free-shipping-products";
 const BATCH1_FIXES_MIGRATION = "2026-11-12-batch1-fixes";
 const BATCH3_CONTENT_MIGRATION = "2026-11-12-batch3-content";
 const STOCK_TOPUP_MIGRATION = "2026-11-12-stock-topup-10";
+const EXCLUSIVE_DELIST_MIGRATION = "2026-11-12-exclusive-delist";
 let pool: Pool | undefined;
 let initialization: Promise<void> | undefined;
 async function database() {
@@ -1686,6 +1687,21 @@ async function runShopMigrations(db: Pool) {
       async () => {
         await conn.execute(
           "UPDATE line_shop_products SET stock=10 WHERE active=TRUE AND (stock IS NULL OR stock<>10)"
+        );
+      }
+    );
+
+    // 2026-11-12 老闆指示：專屬賣場的兩件指定商品（EXC001、EXC002）先
+    // 下架 — 目前沒有指定代購的客人。與第一批好市多下架相同作法：
+    // active=FALSE、非刪除，資料完整保留，之後在後台重新上架即可；
+    // 分類分頁與區塊由前台依即時商品數自動隱藏／恢復。
+    await onceWithLock(
+      conn,
+      "line_shop_exclusive_delist_2026_11_12",
+      EXCLUSIVE_DELIST_MIGRATION,
+      async () => {
+        await conn.execute(
+          "UPDATE line_shop_products SET active=FALSE WHERE id IN ('EXC001','EXC002')"
         );
       }
     );
