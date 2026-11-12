@@ -95,6 +95,42 @@ const BATCH3_CONTENT_MIGRATION = "2026-11-12-batch3-content";
 const STOCK_TOPUP_MIGRATION = "2026-11-12-stock-topup-10";
 const EXCLUSIVE_DELIST_MIGRATION = "2026-11-12-exclusive-delist";
 const DONKI_DEADLINE_MIGRATION = "2026-11-12-donki-deadline-copy";
+const DONKI_OFFICIAL_IMAGES_MIGRATION = "2026-11-12-donki-official-images";
+// 2026-11-12 唐吉訶德商品圖換成官方／原廠圖：新圖放在 -v2 檔名（舊網址
+// 有 7 天快取，同名覆寫客人短期內還是看到舊的傳單裁圖），這裡把資料庫
+// 兩層的 image 從舊路徑換到 -v2；目前值不等於舊路徑就不動（後台若已
+// 自行換圖不會被蓋掉）。種子目錄檔已同步改成 -v2。
+const DONKI_OFFICIAL_IMAGE_IDS = [
+  "DON-13-003",
+  "DON-13-004",
+  "DON-13-005",
+  "DON-13-007",
+  "DON-13-008",
+  "DON-13-009",
+  "DON-13-010",
+  "DON-13-013",
+  "DON-13-014",
+  "DON-13-015",
+  "DON-13-018",
+  "DON-13-019",
+  "DON-13-021",
+  "DON-13-022",
+  "DON-13-023",
+  "DON-ES-001",
+  "DON-ES-002",
+  "DON-ES-003",
+  "DON-ES-004",
+  "DON-ES-005",
+  "DON-ES-006",
+  "DON-ES-007",
+  "DON-ES-008",
+  "DON-ES-009",
+  "DON-ES-011",
+  "DON-ES-012",
+  "DON-ES-013",
+  "DON-ES-014",
+  "DON-ES-015",
+];
 let pool: Pool | undefined;
 let initialization: Promise<void> | undefined;
 async function database() {
@@ -1768,6 +1804,41 @@ async function runShopMigrations(db: Pool) {
               await conn.execute(
                 "UPDATE line_shop_products SET admin_json=? WHERE id=?",
                 [JSON.stringify(nextAdmin), item.id]
+              );
+          }
+        }
+      }
+    );
+
+    // 2026-11-12 唐吉訶德商品圖換官方圖（-v2 檔名，理由見檔案上方
+    // DONKI_OFFICIAL_IMAGE_IDS 的註解）。data_json／admin_json 哪一層的
+    // image 還等於舊路徑就換哪一層（與第三批相同原則）。
+    await onceWithLock(
+      conn,
+      "line_shop_donki_official_images_2026_11_12",
+      DONKI_OFFICIAL_IMAGES_MIGRATION,
+      async () => {
+        for (const id of DONKI_OFFICIAL_IMAGE_IDS) {
+          const from = `/line-shop/img/${id}.webp`;
+          const to = `/line-shop/img/${id}-v2.webp`;
+          const [rows] = await conn.query<RowDataPacket[]>(
+            "SELECT data_json,admin_json FROM line_shop_products WHERE id=?",
+            [id]
+          );
+          const row = rows[0];
+          if (!row) continue;
+          const stored = parsed<Record<string, unknown>>(row.data_json);
+          if (stored.image === from)
+            await conn.execute(
+              "UPDATE line_shop_products SET data_json=? WHERE id=?",
+              [JSON.stringify({ ...stored, image: to }), id]
+            );
+          if (row.admin_json) {
+            const admin = parsed<Record<string, unknown>>(row.admin_json);
+            if (admin.image === from)
+              await conn.execute(
+                "UPDATE line_shop_products SET admin_json=? WHERE id=?",
+                [JSON.stringify({ ...admin, image: to }), id]
               );
           }
         }
