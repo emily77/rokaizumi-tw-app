@@ -212,6 +212,11 @@ document.getElementById('order-form').addEventListener('submit', async event => 
     delete fields.scent;
   }
   const payload = { ...fields, items: [...selected].sort((a, b) => a - b) };
+  const deliverySummary = `${fields.street}, ${fields.suburb}, ${fields.state} ${fields.postcode}, Australia`;
+  if (!window.confirm(`Please check your delivery address:\n\n${fields.name}\n${deliverySummary}\n\nWe deliver to Australia only. If this address is not in Australia, please cancel and email rokaizumi@gmail.com for a shipping quote instead.`)) {
+    status.textContent = 'Order not submitted. Please check your delivery address — we deliver to Australia only.';
+    return;
+  }
   submitting = true;
   status.textContent = 'Submitting your order…';
   button.disabled = true;
