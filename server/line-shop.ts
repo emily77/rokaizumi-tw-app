@@ -92,6 +92,7 @@ const SELF_HOSTED_IMAGES_MIGRATION = "2026-10-30-self-hosted-images";
 const FREE_SHIPPING_MIGRATION = "2026-10-31-free-shipping-products";
 const BATCH1_FIXES_MIGRATION = "2026-11-12-batch1-fixes";
 const BATCH3_CONTENT_MIGRATION = "2026-11-12-batch3-content";
+const STOCK_TOPUP_MIGRATION = "2026-11-12-stock-topup-10";
 let pool: Pool | undefined;
 let initialization: Promise<void> | undefined;
 async function database() {
@@ -1672,6 +1673,20 @@ async function runShopMigrations(db: Pool) {
               );
           }
         }
+      }
+    );
+
+    // 2026-11-12 老闆指示：上架中商品庫存全部補到 10。與 10 月那次不同，
+    // 這次不排除任何商品（含 EXC002 與庫存高於 10 的），全部 active 商品
+    // 最終都是 10；下架中的商品不動。
+    await onceWithLock(
+      conn,
+      "line_shop_stock_topup_2026_11_12",
+      STOCK_TOPUP_MIGRATION,
+      async () => {
+        await conn.execute(
+          "UPDATE line_shop_products SET stock=10 WHERE active=TRUE AND (stock IS NULL OR stock<>10)"
+        );
       }
     );
   } finally {

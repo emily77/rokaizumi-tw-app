@@ -36,8 +36,14 @@ p{margin:10px 0}
 .card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
 /* 圖框全分類統一：正方形、白底、contain 置中。原本只有超市分類是正方形圖框，
    其他分類用 205px 高的灰框，同一間店兩種長相；統一後混雜的原圖尺寸
-   （224×300～787×800）都以同一個比例呈現，不裁切、不放大。 */
-.pack{aspect-ratio:1;background:#fff;display:grid;place-items:center;padding:14px;border:0;border-bottom:1px solid var(--line);width:100%}
+   （224×300～787×800）都以同一個比例呈現，不裁切、不放大。
+   2026-11-12 二次修正：第一版用 aspect-ratio 寫在 <button> 上、子層再以
+   百分比高度撐滿，在 LINE 內建瀏覽器（iOS WKWebView）實測失效，正方形
+   框不住直長圖（如 159×640 的山葵圖），卡片被拉成原圖高度。改用
+   padding-top:100% 撐出正方形（不依賴 aspect-ratio），內層 span 改絕對
+   定位鋪滿，四邊留白 14px（手機 10px）取代原本的 padding 設計。 */
+.pack{position:relative;width:100%;height:0;padding-top:100%;background:#fff;border:0;border-bottom:1px solid var(--line)}
+.pack>span{position:absolute;top:14px;right:14px;bottom:14px;left:14px;width:auto;height:auto}
 .pack img{width:100%;height:100%;object-fit:contain;object-position:center}
 .card-body{padding:14px;flex:1;display:flex;flex-direction:column}
 .meta{font-size:12px;color:#657b89;letter-spacing:.05em}
@@ -190,7 +196,7 @@ body.formpage{background:var(--soft)}
   nav{padding:0 16px;gap:22px}
   main{padding:24px 16px 100px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
-  .pack{padding:10px}
+  .pack>span{top:10px;right:10px;bottom:10px;left:10px}
   .card-body{padding:11px}
   .card h3{font-size:16px;min-height:72px}
   .field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
