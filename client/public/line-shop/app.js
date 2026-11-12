@@ -265,10 +265,22 @@ function renderAi() {
       `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${esc(p.tag || "AI PC 周邊")}</span>${p.freeShipping ? `<span class="tag">免運</span>` : ""}</div><p class="price">${money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : `可選數量上限：${p.stock} 件 · ${p.freeShipping ? "此商品免運" : "運費另計"}`}</p>${buyButton(p)}</div></article>`
   ).join("");
 }
+// 唐吉訶德卡片標籤：週替品項的標籤本身已含期間（如「週替特價
+// 11/16–11/22」），原樣顯示；其他傳單品項依後台存的 saleEnd 自動
+// 補上「・至 M/D」，之後每一期新商品上架就會自己帶截止日，不用
+// 再逐件手改標籤文字。
+const donkiTag = p => {
+  const tag = p.tag || "唐吉訶德特價";
+  if (tag.includes("週替") || !p.saleEnd) return tag;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p.saleEnd);
+  if (!m) return tag;
+  const base = tag.includes("會員") ? "江坂會員特價" : "傳單特價";
+  return `${base}・至${Number(m[2])}/${Number(m[3])}`;
+};
 function renderDonki() {
   $("donki-products").innerHTML = DONKI.map(
     p =>
-      `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${esc(p.tag || "唐吉訶德特價")}</span></div><p class="price">${money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : `可選數量上限：${p.stock} 件 · ${p.freeShipping ? "此商品免運" : "運費另計"}`}</p>${buyButton(p)}</div></article>`
+      `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${esc(donkiTag(p))}</span></div><p class="price">${money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : `可選數量上限：${p.stock} 件 · ${p.freeShipping ? "此商品免運" : "運費另計"}`}</p>${buyButton(p)}</div></article>`
   ).join("");
 }
 function sumHtml(t) {
@@ -444,6 +456,34 @@ showTab(currentCatalog);
 // 舊分類；即時資料的第一輪渲染（CATALOG_TABS、空分類隱藏）都
 // 完成後才在這裡顯示，之後有商品重新上架的分類也會照原邏輯自動出現。
 $("catalog-nav")?.classList.remove("hidden");
+// 唐吉訶德分類介紹的「本期至 …」：取目前上架傳單品中最晚的 saleEnd
+// 即時產生，新一期換檔後自動跟著變，不用再改頁面上的靜態文字。
+const cycleEl = $("donki-cycle");
+if (cycleEl) {
+  const ends = DONKI.map(p => p.saleEnd).filter(
+    s => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s)
+  );
+  if (ends.length) {
+    const latest = ends.sort()[ends.length - 1];
+    const [y, mo, da] = latest.split("-").map(Number);
+    const weekday =
+      "日一二三四五六"[new Date(Date.UTC(y, mo - 1, da)).getUTCDay()];
+    cycleEl.textContent = `本期至 ${mo}/${da}（${weekday}）`;
+    cycleEl.classList.remove("hidden");
+  }
+}
+// 手機版分類列是橫向捲動容器：LINE 內建瀏覽器在頁面還原／重開時會
+// 記住容器上次的捲動位置，第一個分頁（唐吉訶德特價）左側會被切掉
+// 一截。導覽顯示後依目前分頁的位置校正捲動：分頁超出左邊界就拉回
+// 來、超出右邊界才往右捲，深連結到其他分頁時也保證該分頁完整可見。
+const switchEl = document.querySelector(".catalog-switch");
+const activeTabBtn = switchEl?.querySelector("button.active");
+if (switchEl && activeTabBtn) {
+  const sr = switchEl.getBoundingClientRect();
+  const br = activeTabBtn.getBoundingClientRect();
+  if (br.left < sr.left) switchEl.scrollLeft -= sr.left - br.left;
+  else if (br.right > sr.right) switchEl.scrollLeft += br.right - sr.right;
+}
 // 後台每一列都有「前台商品頁」連結，指向 ?p=<編號>；帶這個參數就直接切到
 // 該商品所屬分區並打開詳情，客人與店主看到的內容完全一樣。
 const linked = new URLSearchParams(location.search).get("p");

@@ -94,6 +94,7 @@ const BATCH1_FIXES_MIGRATION = "2026-11-12-batch1-fixes";
 const BATCH3_CONTENT_MIGRATION = "2026-11-12-batch3-content";
 const STOCK_TOPUP_MIGRATION = "2026-11-12-stock-topup-10";
 const EXCLUSIVE_DELIST_MIGRATION = "2026-11-12-exclusive-delist";
+const DONKI_DEADLINE_MIGRATION = "2026-11-12-donki-deadline-copy";
 let pool: Pool | undefined;
 let initialization: Promise<void> | undefined;
 async function database() {
@@ -1525,6 +1526,22 @@ const BATCH3_CHANGES: Record<
   }
  }
 };
+// 唐吉訶德傳單商品的截止提醒文案：依 saleEnd（YYYY-MM-DD）產生。
+// 星期以 UTC 計算，避免伺服器時區讓日期位移；「建議下單日」取截止
+// 前 2 天，讓「接單後到門市採買」的流程來得及在特價期間內完成。
+const DONKI_WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+function donkiDeadlineLine(saleEnd: string): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(saleEnd);
+  if (!m) return null;
+  const end = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  if (Number.isNaN(end.getTime())) return null;
+  const early = new Date(end.getTime() - 2 * 86_400_000);
+  return (
+    `特價至 ${end.getUTCFullYear()}/${end.getUTCMonth() + 1}/${end.getUTCDate()}` +
+    `（${DONKI_WEEKDAYS[end.getUTCDay()]}）止，結束即下架；` +
+    `建議 ${early.getUTCMonth() + 1}/${early.getUTCDate()} 前下單，確保特價期間內為您採買。`
+  );
+}
 async function runShopMigrations(db: Pool) {
   const conn = await db.getConnection();
   try {
@@ -1706,6 +1723,56 @@ async function runShopMigrations(db: Pool) {
         );
       }
     );
+
+    // 2026-11-12 唐吉訶德特價截止文案：每件傳單商品的說明最前面補上
+    // 依各自 saleEnd 產生的截止提醒（特價至 X 止、結束即下架、建議
+    // 提前 2 天下單）。data_json／admin_json 哪一層有 desc 就補哪一
+    // 層（與第三批相同原則：catalog() 合併時 admin_json 優先）。
+    // 已含該行就跳過，重跑不會重複；種子目錄檔已同步補上同一行
+    // （前台 customerDescriptions 讀種子檔，兩邊內容一致）。
+    await onceWithLock(
+      conn,
+      "line_shop_donki_deadline_2026_11_12",
+      DONKI_DEADLINE_MIGRATION,
+      async () => {
+        for (const item of seed) {
+          if (item.catalog !== "donki") continue;
+          const line = donkiDeadlineLine(
+            typeof item.saleEnd === "string" ? item.saleEnd : ""
+          );
+          if (!line) continue;
+          const [rows] = await conn.query<RowDataPacket[]>(
+            "SELECT data_json,admin_json FROM line_shop_products WHERE id=?",
+            [item.id]
+          );
+          const row = rows[0];
+          if (!row) continue;
+          const prepend = (
+            obj: Record<string, unknown>
+          ): Record<string, unknown> | null => {
+            if (typeof obj.desc !== "string" || !obj.desc) return null;
+            if (obj.desc.includes(line)) return null;
+            return { ...obj, desc: line + obj.desc };
+          };
+          const stored = parsed<Record<string, unknown>>(row.data_json);
+          const nextStored = prepend(stored);
+          if (nextStored)
+            await conn.execute(
+              "UPDATE line_shop_products SET data_json=? WHERE id=?",
+              [JSON.stringify(nextStored), item.id]
+            );
+          if (row.admin_json) {
+            const admin = parsed<Record<string, unknown>>(row.admin_json);
+            const nextAdmin = prepend(admin);
+            if (nextAdmin)
+              await conn.execute(
+                "UPDATE line_shop_products SET admin_json=? WHERE id=?",
+                [JSON.stringify(nextAdmin), item.id]
+              );
+          }
+        }
+      }
+    );
   } finally {
     conn.release();
   }
@@ -1762,6 +1829,15 @@ async function catalog(db: Pool | PoolConnection) {
         delete publicProduct.source;
       }
       if (product.id === "EXC002") delete publicProduct.source;
+      // 唐吉訶德傳單品的特價截止日是給客人看的資訊：前台卡片標籤與
+      // 分類介紹都由 saleEnd 產生。來源店家、傳單價等進貨資訊仍只
+      // 送後台（見 /admin/products），不放進前台 payload。
+      if (
+        product.catalog === "donki" &&
+        typeof product.saleEnd === "string" &&
+        product.saleEnd
+      )
+        publicProduct.saleEnd = product.saleEnd;
       // 「查看原廠商品資料」只連原廠官網；樂天、Yahoo 購物等通路賣場
       // 會讓客人直接比價，前台不送出（原始連結保留在資料庫供後台參考）。
       if (

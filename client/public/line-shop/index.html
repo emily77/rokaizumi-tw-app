@@ -42,6 +42,7 @@
           <p class="edition">DON QUIJOTE FLYER SPECIALS</p>
           <h1>唐吉訶德特價</h1>
           <p>本期唐吉訶德傳單特價商品，從美妝保養到零食、調味料與生活用品。</p>
+          <p id="donki-cycle" class="hidden"></p>
           <p class="muted">傳單特價期間限定，接單後我們會到日本唐吉訶德門市為您採買；數量有限，售完或特價結束即下架。可與其他分類合併選購、一起結帳。</p>
         </div>
         <div id="donki-products" class="grid"></div>
@@ -211,7 +212,7 @@
             document.querySelector(".notice").textContent =
               "Stripe 測試環境｜不會實際扣款";
           const js = document.createElement("script");
-          js.src = "app.js?v=20261112-batch10";
+          js.src = "app.js?v=20261112-batch11";
           document.body.appendChild(js);
         } catch {
           document.querySelector(".notice").textContent =
