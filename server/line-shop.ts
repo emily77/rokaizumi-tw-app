@@ -1946,10 +1946,34 @@ router.get("/config", (_req, res) =>
     termsVersion: TERMS_VERSION,
   })
 );
-router.get("/products", handled(async (_req, res) => {
-    res.json({ products: await catalog(await database()) });
-  })
-);
+// 商品清單：公開唯讀，給瀏覽器快取（max-age=60 + stale-while-revalidate），
+// 並用「內容雜湊」當 ETag。ETag 每次都由當下查到的目錄現算，所以後台
+// 改價／改庫存／換圖、開機資料修正、訂單扣庫存——任何一處變動，下一次
+// 驗證就會拿到新 ETag，不需要另外做快取失效；內容沒變時瀏覽器送
+// If-None-Match 就能換回 304，不必重抓整包 JSON。刻意不在伺服器端留
+// 目錄副本：後台的既有約定是「改完立即生效」，留副本會打破這個保證。
+// 不走 handled()，因為它會把 Cache-Control 強制設成 no-store。
+router.get("/products", async (req, res) => {
+  res.setHeader(
+    "Cache-Control",
+    "public, max-age=60, stale-while-revalidate=300"
+  );
+  try {
+    const body = JSON.stringify({
+      products: await catalog(await database()),
+    });
+    const etag = `"${hash(body)}"`;
+    res.setHeader("ETag", etag);
+    if (req.headers["if-none-match"] === etag) {
+      res.status(304).end();
+      return;
+    }
+    res.type("application/json").send(body);
+  } catch {
+    res.setHeader("Cache-Control", "no-store");
+    res.status(503).json({ error: "服務暫時無法使用，請稍後再試" });
+  }
+});
 // 後台上傳的商品圖。公開可讀（前台 <img> 要用），檔名是內容雜湊，
 // 同一張圖永遠是同一個網址，所以可以永久快取。
 router.get("/img/:file", async (req, res) => {

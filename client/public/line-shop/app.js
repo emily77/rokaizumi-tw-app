@@ -12,6 +12,7 @@ function catalogFromHash() {
 }
 let currentCatalog = catalogFromHash();
 let groceryCategory = "全部";
+let maskQuery = "";
 const cart = new Map();
 let shippingMethod = "ems";
 const CART_KEY = "roka-line-shop-cart-v1";
@@ -186,10 +187,27 @@ function packImage(p) {
     : `<span class="pack-pending"><strong>${esc(p.jp)}</strong><small>商品照片準備中</small></span>`;
 }
 function renderProducts() {
-  $("products").innerHTML = MASKS.map(
-    p =>
-      `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${p.tag}</span></div><p class="price">${p.price === null ? "價格核對中" : money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : p.price === null ? `可選數量上限：${p.stock} 包／盒` : `可選數量上限：${p.stock} 包／盒 · 運費另計`}</p>${buyButton(p)}</div></article>`
-  ).join("");
+  const q = maskQuery.trim().toLowerCase();
+  const list = q
+    ? MASKS.filter(p =>
+        [p.name, p.jp, p.desc, p.spec, p.tag]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
+      )
+    : MASKS;
+  $("products").innerHTML = list.length
+    ? list
+        .map(
+          p =>
+            `<article class="card"><button class="pack" data-detail="${p.id}" aria-label="查看${esc(p.name)}詳情">${packImage(p)}</button><div class="card-body"><span class="meta">${esc(p.spec)}</span><h3><button class="textbtn" data-detail="${p.id}">${esc(p.name)}</button></h3><div><span class="tag">${p.tag}</span></div><p class="price">${p.price === null ? "價格核對中" : money(price(p))}</p><p class="muted">${soldOut(p) ? "目前無現貨" : p.price === null ? `可選數量上限：${p.stock} 包／盒` : `可選數量上限：${p.stock} 包／盒 · 運費另計`}</p>${buyButton(p)}</div></article>`
+        )
+        .join("")
+    : `<div class="empty"><h2>找不到符合的商品</h2><p>換個關鍵字試試，或清除搜尋看全部 ${MASKS.length} 款面膜。</p></div>`;
+  $("shop-count").textContent = q
+    ? `搜尋「${maskQuery.trim()}」· ${list.length}款`
+    : `全部 · ${MASKS.length}款`;
 }
 function renderGrocery() {
   $("supermarket-products").innerHTML = GROCERY.filter(
@@ -371,6 +389,10 @@ document.addEventListener("click", e => {
   } catch (error) {
     toast(error.message);
   }
+});
+$("shop-search").addEventListener("input", e => {
+  maskQuery = e.target.value;
+  renderProducts();
 });
 $("supermarket-filters").innerHTML = [
   "全部",
