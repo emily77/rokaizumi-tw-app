@@ -4,6 +4,10 @@ import {
   orderShippingTwd,
   resolveShopItems,
   validPaidSession,
+  merchantItemLines,
+  donkiStoreHint,
+  type MerchantItemHint,
+  type ShopItem,
   type ShopProduct,
 } from "./line-shop-pricing";
 const products = [
@@ -136,5 +140,48 @@ describe("verified Stripe payment amount and mode", () => {
       { client_reference_id: "RZ-2" },
     ])
       expect(validPaidSession({ ...session, ...overrides }, order)).toBe(false);
+  });
+});
+describe("merchant order item lines (seller notifications)", () => {
+  // 與 2026-11-13 實際訂單相同的品項組合：混合唐吉訶德與其他分類。
+  const orderItems: ShopItem[] = [
+    { productId: "DON-13-003", name: "唐吉訶德｜假睫毛 10對入（多款可選）", quantity: 1, unitPriceTwd: 286 },
+    { productId: "DON-13-006", name: "唐吉訶德｜小蝦與腰果零食 57g", quantity: 2, unitPriceTwd: 112 },
+    { productId: "DON-ES-001", name: "樂敦 Melano CC｜集中對策面膜 大容量 28枚", quantity: 1, unitPriceTwd: 171 },
+    { productId: "SUP-0001", name: "關口醬油仙貝 85枚", quantity: 2, unitPriceTwd: 500 },
+  ];
+  const hints = new Map<string, MerchantItemHint>([
+    ["DON-13-003", { catalog: "donki", flyerStores: "十三店・江坂店（兩店同價）" }],
+    ["DON-13-006", { catalog: "donki", flyerStores: "十三店・江坂店（兩店同價）" }],
+    ["DON-ES-001", { catalog: "donki", flyerStores: "江坂店限定" }],
+    ["SUP-0001", { catalog: "supermarket" }],
+  ]);
+  it("renders product IDs on every line and store hints only for Donki items", () => {
+    expect(merchantItemLines(orderItems, hints)).toBe(
+      [
+        "唐吉訶德｜假睫毛 10對入（多款可選）（DON-13-003）× 1 → 採買：十三店・江坂店（兩店同價）",
+        "唐吉訶德｜小蝦與腰果零食 57g（DON-13-006）× 2 → 採買：十三店・江坂店（兩店同價）",
+        "樂敦 Melano CC｜集中對策面膜 大容量 28枚（DON-ES-001）× 1 → 採買：江坂店限定",
+        "關口醬油仙貝 85枚（SUP-0001）× 2",
+      ].join("\n")
+    );
+  });
+  it("falls back to the ID prefix when the product row has no flyerStores", () => {
+    expect(donkiStoreHint("DON-ES-099")).toBe("江坂店限定");
+    expect(donkiStoreHint("DON-13-099", { catalog: "donki" })).toBe(
+      "十三店・江坂店（兩店同價）"
+    );
+    expect(
+      merchantItemLines(
+        [{ productId: "DON-ES-099", name: "唐吉訶德｜測試商品", quantity: 3, unitPriceTwd: 100 }],
+        new Map()
+      )
+    ).toBe("唐吉訶德｜測試商品（DON-ES-099）× 3 → 採買：江坂店限定");
+  });
+  it("never adds a store hint for non-Donki catalogs", () => {
+    expect(donkiStoreHint("M001", { catalog: "shop" })).toBeNull();
+    expect(
+      donkiStoreHint("COSTCO-1", { catalog: "costco", flyerStores: "十三店" })
+    ).toBeNull();
   });
 });

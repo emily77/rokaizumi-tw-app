@@ -120,6 +120,44 @@ export function resolveShopItems(input: unknown, products: ShopProduct[]) {
   if (shippingSubtotalTwd > 0) orderShippingTwd(shippingSubtotalTwd);
   return { items, subtotalTwd, shippingSubtotalTwd };
 }
+export type MerchantItemHint = {
+  catalog?: string;
+  flyerStores?: string;
+};
+/**
+ * 賣家通知用的採買地點提示：只有唐吉訶德商品需要，
+ * 老闆靠這行決定去哪家分店買。flyerStores 是商品資料裡的人話字串
+ * （如「十三店・江坂店（兩店同價）」「江坂店限定」）。
+ */
+export function donkiStoreHint(
+  productId: string,
+  hint?: MerchantItemHint
+): string | null {
+  if (hint?.catalog !== "donki" && !productId.startsWith("DON-"))
+    return null;
+  if (hint?.flyerStores) return hint.flyerStores;
+  // 商品列已刪除或沒填 flyerStores 時，退回用編號前綴判斷
+  // （DON-ES 為江坂店限定，其餘 DON 為連鎖傳單、兩店同價）。
+  return productId.startsWith("DON-ES-")
+    ? "江坂店限定"
+    : "十三店・江坂店（兩店同價）";
+}
+/**
+ * 賣家版訂單明細：每行帶商品編號，唐吉訶德商品再附採買分店。
+ * 客戶版通知不要用這個（客戶只需要品名）。
+ */
+export function merchantItemLines(
+  items: ShopItem[],
+  hints: Map<string, MerchantItemHint> = new Map()
+): string {
+  return items
+    .map(i => {
+      const base = `${i.name}（${i.productId}）× ${i.quantity}`;
+      const stores = donkiStoreHint(i.productId, hints.get(i.productId));
+      return stores ? `${base} → 採買：${stores}` : base;
+    })
+    .join("\n");
+}
 export function validPaidSession(
   session: {
     payment_status: string;

@@ -21,7 +21,10 @@ import {
   shippingQuote,
   orderShippingTwd,
   validPaidSession,
+  merchantItemLines,
+  donkiStoreHint,
   TERMS_VERSION,
+  type MerchantItemHint,
   type ShopItem,
   type ShopProduct,
 } from "./line-shop-pricing";
@@ -1990,6 +1993,41 @@ async function enqueue(
     [id, kind, recipient, subject, body]
   );
 }
+/**
+ * 賣家通知／後台訂單要顯示唐吉訶德商品的採買分店。來源是商品資料裡的
+ * flyerStores（只存在 data_json），合併規則比照 catalog()：admin_json
+ * 蓋過的欄位優先。訂單本身有存 productId，這裡只是把它翻成採買提示。
+ */
+async function orderItemHints(
+  db: Pool | PoolConnection,
+  items: ShopItem[]
+): Promise<Map<string, MerchantItemHint>> {
+  const hints = new Map<string, MerchantItemHint>();
+  const ids = Array.from(new Set(items.map(i => i.productId)));
+  if (!ids.length) return hints;
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT id,data_json,admin_json FROM line_shop_products WHERE id IN (${ids
+      .map(() => "?")
+      .join(",")})`,
+    ids
+  );
+  for (const row of rows) {
+    const stored = parsed<Record<string, unknown>>(row.data_json);
+    const admin = row.admin_json
+      ? parsed<Record<string, unknown>>(row.admin_json)
+      : {};
+    const product = { ...stored, ...admin };
+    hints.set(String(row.id), {
+      catalog:
+        typeof product.catalog === "string" ? product.catalog : undefined,
+      flyerStores:
+        typeof product.flyerStores === "string"
+          ? product.flyerStores
+          : undefined,
+    });
+  }
+  return hints;
+}
 async function queuePaymentReminders(db: Pool) {
   const [orders] = await db.query<RowDataPacket[]>(
     `SELECT o.* FROM line_shop_orders o
@@ -2481,19 +2519,30 @@ async function ordersPayload(db: Pool, storeId?: string) {
       : "SELECT id,order_id,kind,state,created_at FROM line_shop_mail ORDER BY id DESC LIMIT 200",
     params
   );
+  const payloadOrders = orders.map(o => ({
+    ...summary(o),
+    customer: parsed(o.customer_json),
+    createdAt: o.created_at,
+    weightGrams: o.weight_grams,
+    fulfillmentStatus:
+      o.status === "paid"
+        ? o.fulfillment_status || "awaiting_preparation"
+        : "unpaid",
+    trackingNumber: o.tracking_number || "",
+    shippedAt: o.shipped_at,
+  }));
+  // 後台訂單明細要帶唐吉訶德採買分店（賣家專用欄位，前台訂單查詢不經過這裡）。
+  const hints = await orderItemHints(
+    db,
+    payloadOrders.flatMap(o => o.items as ShopItem[])
+  );
+  for (const o of payloadOrders)
+    o.items = (o.items as ShopItem[]).map(i => ({
+      ...i,
+      flyerStores: donkiStoreHint(i.productId, hints.get(i.productId)) ?? "",
+    }));
   return {
-    orders: orders.map(o => ({
-      ...summary(o),
-      customer: parsed(o.customer_json),
-      createdAt: o.created_at,
-      weightGrams: o.weight_grams,
-      fulfillmentStatus:
-        o.status === "paid"
-          ? o.fulfillment_status || "awaiting_preparation"
-          : "unpaid",
-      trackingNumber: o.tracking_number || "",
-      shippedAt: o.shipped_at,
-    })),
+    orders: payloadOrders,
     mail,
   };
 }
@@ -3260,19 +3309,17 @@ async function preparePayment(
       `ROKA IZUMI｜請付款 ${order!.id}`,
       `訂單：${order!.id}\n商品小計：NT$${order!.subtotal}\n運費：NT${quote.shippingTwd}（商品免運則不另收；一般商品滿NT$2,000運費NT$220，滿NT$5,000免運）\n總額：NT$${order!.subtotal + quote.shippingTwd}\nStripe 安全付款（24小時內有效）：${session.url}\n下單後七個工作天內從日本寄出。`
     );
+    const requestItems = parsed<ShopItem[]>(order!.items_json);
     await enqueue(
       db,
       order!.id,
       "request_merchant",
       process.env.LINE_SHOP_NOTIFY_EMAIL || "rokaizumi@gmail.com",
       `ROKA IZUMI｜新訂單待付款 ${order!.id}`,
-      `訂單：${order!.id}\n尚未付款\n商品小計：NT$${order!.subtotal}\n運費：NT$${quote.shippingTwd}\n總額：NT$${order!.subtotal + quote.shippingTwd}\n${parsed<
-        ShopItem[]
-      >(order!.items_json)
-        .map(i => `${i.productId} ${i.name} × ${i.quantity}`)
-        .join(
-          "\n"
-        )}\n\n${merchantCustomerDetails(customer)}\n付款完成後會另寄通知。`
+      `訂單：${order!.id}\n尚未付款\n商品小計：NT$${order!.subtotal}\n運費：NT$${quote.shippingTwd}\n總額：NT$${order!.subtotal + quote.shippingTwd}\n${merchantItemLines(
+        requestItems,
+        await orderItemHints(db, requestItems)
+      )}\n\n${merchantCustomerDetails(customer)}\n付款完成後會另寄通知。`
     );
   }
   void drainShopMail();
@@ -3398,13 +3445,18 @@ export async function lineShopWebhook(req: Request, res: Response) {
       );
       if (live()) {
         const customer = parsed<any>(order.customer_json);
-        const text = `訂單：${order.id}\n已付款 NT$${order.subtotal + order.shipping}（商品 NT$${order.subtotal}＋運費 NT${order.shipping}）\n${parsed<
-          ShopItem[]
-        >(order.items_json)
+        const paidItems = parsed<ShopItem[]>(order.items_json);
+        const paidHeader = `訂單：${order.id}\n已付款 NT$${order.subtotal + order.shipping}（商品 NT$${order.subtotal}＋運費 NT${order.shipping}）`;
+        const paidFooter = `下單後七個工作天內從日本寄出，送達時間另計。\n客服：info@rokaizumi-tw.jp`;
+        // 客戶版：只有品名，保持乾淨。
+        const text = `${paidHeader}\n${paidItems
           .map(i => `${i.name} × ${i.quantity}`)
-          .join(
-            "\n"
-          )}\n下單後七個工作天內從日本寄出，送達時間另計。\n客服：info@rokaizumi-tw.jp`;
+          .join("\n")}\n${paidFooter}`;
+        // 賣家版：另外組裝，明細帶商品編號，唐吉訶德商品再附採買分店。
+        const merchantText = `${paidHeader}\n${merchantItemLines(
+          paidItems,
+          await orderItemHints(conn, paidItems)
+        )}\n${paidFooter}`;
         await enqueue(
           conn,
           order.id,
@@ -3419,7 +3471,7 @@ export async function lineShopWebhook(req: Request, res: Response) {
           "paid_merchant",
           process.env.LINE_SHOP_NOTIFY_EMAIL || "rokaizumi@gmail.com",
           `ROKA IZUMI｜已付款・待備貨 ${order.id}`,
-          text +
+          merchantText +
             `\n\n${merchantCustomerDetails(customer)}\n請到管理頁安排出貨：${origin()}/line-shop/admin.html`
         );
       }
