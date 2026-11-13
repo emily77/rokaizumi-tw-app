@@ -55,6 +55,12 @@
       background: #fff;
       color: var(--ink);
     }
+    .sectionnav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 14px;
+    }
     .pill.on {
       background: #e3f4ec;
       color: #1c6b45;
@@ -152,6 +158,11 @@
         >登出</a
       >
     </p>
+    <p class="sectionnav">
+      <button class="btn ghost" type="button" id="navProducts">
+        商品上架管理</button
+      ><button class="btn ghost" type="button" id="navOrders">訂單管理</button>
+    </p>
 
     <section id="productsSection" hidden>
       <h2>商品上架管理</h2>
@@ -173,7 +184,7 @@
       <div id="products" role="status">載入中…</div>
     </section>
 
-    <h2>訂單管理</h2>
+    <h2 id="ordersHeading">訂單管理</h2>
     <p>
       客人付款成功後，公司會收到已付款通知。已付款訂單可操作「開始備貨」，實際寄出後操作「標記已出貨」，並填寫物流單號。<br />新訂單會自動計算運費並建立
       Stripe
@@ -822,6 +833,25 @@
       load();
       loadStores();
     };
+    // 頁面區塊導覽：商品與訂單都是非同步載入後才長出高度，瀏覽器對網址
+    // # 錨點的原生跳轉會太早發生、被後來渲染的列表推回上方，所以改成
+    // 資料全部載入完再捲動（見下方 init 的 applyHashScroll 呼叫）。
+    function scrollToSection(el) {
+      if (el && !el.hidden) el.scrollIntoView({ block: "start" });
+    }
+    function applyHashScroll() {
+      if (location.hash === "#orders")
+        scrollToSection(document.getElementById("ordersHeading"));
+      else if (
+        location.hash === "#products" ||
+        location.hash === "#productsSection"
+      )
+        scrollToSection(document.getElementById("productsSection"));
+    }
+    document.getElementById("navProducts").onclick = () =>
+      scrollToSection(document.getElementById("productsSection"));
+    document.getElementById("navOrders").onclick = () =>
+      scrollToSection(document.getElementById("ordersHeading"));
     (async () => {
       try {
         const r = await fetch("/api/line-shop/auth/me", { cache: "no-store" });
@@ -840,9 +870,12 @@
           ? `管理員：${d.user.name || d.user.email}`
           : `商店：${d.store.name}`;
         document.getElementById("productsSection").hidden = !isAdmin;
-        if (isAdmin) loadProducts();
+        document.getElementById("navProducts").hidden = !isAdmin;
+        const productsReady = isAdmin ? loadProducts() : Promise.resolve();
         await load();
         await loadStores();
+        await productsReady;
+        applyHashScroll();
       } catch (e) {
         document.getElementById("orders").textContent =
           e.message || "無法取得登入狀態，請重新整理。";
