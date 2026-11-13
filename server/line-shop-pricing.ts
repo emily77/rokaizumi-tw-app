@@ -123,6 +123,10 @@ export function resolveShopItems(input: unknown, products: ShopProduct[]) {
 export type MerchantItemHint = {
   catalog?: string;
   flyerStores?: string;
+  /** 商品の日文名：老闆在日本店面靠它對照貨架，只給賣家看。 */
+  jp?: string;
+  /** 商品圖路徑：後台訂單明細的縮圖用，只給賣家看。 */
+  image?: string;
 };
 /**
  * 賣家通知用的採買地點提示：只有唐吉訶德商品需要，
@@ -143,7 +147,8 @@ export function donkiStoreHint(
     : "十三店・江坂店（兩店同價）";
 }
 /**
- * 賣家版訂單明細：每行帶商品編號，唐吉訶德商品再附採買分店。
+ * 賣家版訂單明細：每行帶商品編號，唐吉訶德商品再附採買分店；
+ * 商品有日文名時，下一行縮排附上（老闆在日本店面對照貨架用）。
  * 客戶版通知不要用這個（客戶只需要品名）。
  */
 export function merchantItemLines(
@@ -151,10 +156,14 @@ export function merchantItemLines(
   hints: Map<string, MerchantItemHint> = new Map()
 ): string {
   return items
-    .map(i => {
+    .flatMap(i => {
+      const hint = hints.get(i.productId);
       const base = `${i.name}（${i.productId}）× ${i.quantity}`;
-      const stores = donkiStoreHint(i.productId, hints.get(i.productId));
-      return stores ? `${base} → 採買：${stores}` : base;
+      const stores = donkiStoreHint(i.productId, hint);
+      const lines = [stores ? `${base} → 採買：${stores}` : base];
+      const jp = hint?.jp?.trim();
+      if (jp) lines.push(`　日文名：${jp}`);
+      return lines;
     })
     .join("\n");
 }

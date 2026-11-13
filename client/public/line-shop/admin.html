@@ -309,6 +309,17 @@
       if (o.status !== "paid") return "";
       return `<p><strong>出貨狀態：${esc(fulfillmentLabels[o.fulfillmentStatus] || o.fulfillmentStatus)}</strong>${o.shippedAt ? "｜出貨時間：" + esc(o.shippedAt) : ""}</p><form data-fulfillment="${esc(o.id)}"><label>物流單號（選填）<input name="tracking" maxlength="100" value="${esc(o.trackingNumber)}"></label>${o.fulfillmentStatus === "awaiting_preparation" ? '<button class="btn" name="action" value="preparing">開始備貨</button>' : o.fulfillmentStatus === "preparing" ? '<button class="btn" name="action" value="shipped">標記已出貨</button>' : '<button class="btn" name="action" value="shipped">儲存物流單號</button>'}<p role="status" class="result"></p></form>`;
     }
+    // 訂單品項：有商品圖時左邊放縮圖（點開看原圖），品名下方小字附日文名，
+    // 方便老闆在日本店面對照包裝與貨架。商品已刪除時就只顯示文字。
+    function orderItem(i) {
+      const thumb = i.image
+        ? `<a href="${esc(i.image)}" target="_blank" rel="noopener"><img src="${esc(i.image)}" alt="" loading="lazy" style="width:92px;height:92px;object-fit:contain;background:#fff;border:1px solid #d8e2e8;border-radius:8px;flex:none"></a>`
+        : "";
+      const jp = i.jp
+        ? `<div style="color:#5b7180;font-size:13px;margin-top:2px">日文名：${esc(i.jp)}</div>`
+        : "";
+      return `<li style="display:flex;gap:10px;align-items:flex-start;margin:8px 0">${thumb}<div><div>${esc(i.name)}（${esc(i.productId)}）× ${i.quantity}${i.flyerStores ? ` → 採買：${esc(i.flyerStores)}` : ""}</div>${jp}</div></li>`;
+    }
     // 管理員看全部訂單，商店帳號只看自己商店的訂單，所以路徑要分開。
     let isAdmin = false;
     const orderBase = () =>
@@ -324,7 +335,7 @@
           d.orders
             .map(
               o =>
-                `<article class="panel"><h2>${esc(o.id)}</h2><p>${esc(o.mode)}｜${esc(paymentLabels[o.status] || o.status)}｜${esc(o.createdAt)}</p><p>商品 NT$${o.subtotalTwd}；運費 ${o.shippingTwd === null ? "待報價" : "NT$" + o.shippingTwd}</p><p>${esc(o.customer.name)}｜${esc(o.customer.email)}｜${esc(o.customer.phone)}</p><p>${esc(o.customer.postalCode)} ${esc(o.customer.address)}</p><ul>${o.items.map(i => `<li>${esc(i.name)}（${esc(i.productId)}）× ${i.quantity}${i.flyerStores ? ` → 採買：${esc(i.flyerStores)}` : ""}</li>`).join("")}</ul>${["awaiting_quote", "quoting"].includes(o.status) ? `<form data-order="${esc(o.id)}"><label>整單含包材重量（克）<input name="weight" type="number" min="1" max="30000" step="1" required value="${o.weightGrams || ""}"></label><label><input type="checkbox" name="supply" required>已確認供貨</label><label><input type="checkbox" name="shipping" required>已確認所有商品可寄送至台灣</label><button class="btn">確認報價並寄送刷卡連結</button></form>` : ""}${fulfillment(o)}${o.checkoutUrl ? `<p><a href="${esc(o.checkoutUrl)}" target="_blank" rel="noopener">查看 Stripe 付款頁</a></p>` : ""}</article>`
+                `<article class="panel"><h2>${esc(o.id)}</h2><p>${esc(o.mode)}｜${esc(paymentLabels[o.status] || o.status)}｜${esc(o.createdAt)}</p><p>商品 NT$${o.subtotalTwd}；運費 ${o.shippingTwd === null ? "待報價" : "NT$" + o.shippingTwd}</p><p>${esc(o.customer.name)}｜${esc(o.customer.email)}｜${esc(o.customer.phone)}</p><p>${esc(o.customer.postalCode)} ${esc(o.customer.address)}</p><ul>${o.items.map(orderItem).join("")}</ul>${["awaiting_quote", "quoting"].includes(o.status) ? `<form data-order="${esc(o.id)}"><label>整單含包材重量（克）<input name="weight" type="number" min="1" max="30000" step="1" required value="${o.weightGrams || ""}"></label><label><input type="checkbox" name="supply" required>已確認供貨</label><label><input type="checkbox" name="shipping" required>已確認所有商品可寄送至台灣</label><button class="btn">確認報價並寄送刷卡連結</button></form>` : ""}${fulfillment(o)}${o.checkoutUrl ? `<p><a href="${esc(o.checkoutUrl)}" target="_blank" rel="noopener">查看 Stripe 付款頁</a></p>` : ""}</article>`
             )
             .join("") || "<p>目前沒有訂單。</p>";
         document.getElementById("mail").innerHTML =

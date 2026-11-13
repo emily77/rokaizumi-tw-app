@@ -166,6 +166,39 @@ describe("merchant order item lines (seller notifications)", () => {
       ].join("\n")
     );
   });
+  it("adds an indented Japanese-name line only when the product has one", () => {
+    const jpHints = new Map<string, MerchantItemHint>([
+      [
+        "DON-13-003",
+        {
+          catalog: "donki",
+          flyerStores: "十三店・江坂店（兩店同價）",
+          jp: "アイラッシュ 各種",
+        },
+      ],
+      // jp 只有空白時視同沒有，不產生空行。
+      [
+        "DON-13-006",
+        {
+          catalog: "donki",
+          flyerStores: "十三店・江坂店（兩店同價）",
+          jp: "　",
+        },
+      ],
+      ["SUP-0001", { catalog: "supermarket", jp: "醤油仙貝 85枚" }],
+    ]);
+    expect(merchantItemLines(orderItems, jpHints)).toBe(
+      [
+        "唐吉訶德｜假睫毛 10對入（多款可選）（DON-13-003）× 1 → 採買：十三店・江坂店（兩店同價）",
+        "　日文名：アイラッシュ 各種",
+        "唐吉訶德｜小蝦與腰果零食 57g（DON-13-006）× 2 → 採買：十三店・江坂店（兩店同價）",
+        // DON-ES-001 不在 jpHints 裡：分店退回前綴判斷，也沒有日文名行。
+        "樂敦 Melano CC｜集中對策面膜 大容量 28枚（DON-ES-001）× 1 → 採買：江坂店限定",
+        "關口醬油仙貝 85枚（SUP-0001）× 2",
+        "　日文名：醤油仙貝 85枚",
+      ].join("\n")
+    );
+  });
   it("falls back to the ID prefix when the product row has no flyerStores", () => {
     expect(donkiStoreHint("DON-ES-099")).toBe("江坂店限定");
     expect(donkiStoreHint("DON-13-099", { catalog: "donki" })).toBe(

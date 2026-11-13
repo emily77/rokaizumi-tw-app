@@ -2093,9 +2093,11 @@ async function enqueue(
   );
 }
 /**
- * 賣家通知／後台訂單要顯示唐吉訶德商品的採買分店。來源是商品資料裡的
- * flyerStores（只存在 data_json），合併規則比照 catalog()：admin_json
- * 蓋過的欄位優先。訂單本身有存 productId，這裡只是把它翻成採買提示。
+ * 賣家通知／後台訂單要顯示唐吉訶德商品的採買分店、日文名與商品圖。
+ * 來源是商品資料裡的 flyerStores／jp／image（只存在 data_json），合併
+ * 規則比照 catalog()：admin_json 蓋過的欄位優先。訂單本身有存 productId，
+ * 這裡只是把它翻成賣家看貨、找貨用的提示。日文名與圖片只給賣家，
+ * 不進客戶版通知與前台 payload。
  */
 async function orderItemHints(
   db: Pool | PoolConnection,
@@ -2122,6 +2124,14 @@ async function orderItemHints(
       flyerStores:
         typeof product.flyerStores === "string"
           ? product.flyerStores
+          : undefined,
+      jp:
+        typeof product.jp === "string" && product.jp.trim()
+          ? product.jp
+          : undefined,
+      image:
+        typeof product.image === "string" && product.image
+          ? product.image
           : undefined,
     });
   }
@@ -2630,7 +2640,9 @@ async function ordersPayload(db: Pool, storeId?: string) {
     trackingNumber: o.tracking_number || "",
     shippedAt: o.shipped_at,
   }));
-  // 後台訂單明細要帶唐吉訶德採買分店（賣家專用欄位，前台訂單查詢不經過這裡）。
+  // 後台訂單明細要帶唐吉訶德採買分店、日文名與商品圖（賣家專用欄位，
+  // 前台訂單查詢不經過這裡）。商品列已不存在時 jp／image 留空字串，
+  // 前端會自動不顯示日文名與縮圖。
   const hints = await orderItemHints(
     db,
     payloadOrders.flatMap(o => o.items as ShopItem[])
@@ -2639,6 +2651,8 @@ async function ordersPayload(db: Pool, storeId?: string) {
     o.items = (o.items as ShopItem[]).map(i => ({
       ...i,
       flyerStores: donkiStoreHint(i.productId, hints.get(i.productId)) ?? "",
+      jp: hints.get(i.productId)?.jp ?? "",
+      image: hints.get(i.productId)?.image ?? "",
     }));
   return {
     orders: payloadOrders,
