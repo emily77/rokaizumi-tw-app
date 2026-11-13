@@ -100,6 +100,7 @@ const EXCLUSIVE_DELIST_MIGRATION = "2026-11-12-exclusive-delist";
 const DONKI_DEADLINE_MIGRATION = "2026-11-12-donki-deadline-copy";
 const DONKI_OFFICIAL_IMAGES_MIGRATION = "2026-11-12-donki-official-images";
 const TUNEWAVE_MODEL_MIGRATION = "2026-11-12-tunewave-model-dkod";
+const SHIP_OLD_ORDERS_MIGRATION = "2026-11-13-ship-orders-before-today";
 // 2026-11-12 唐吉訶德商品圖換成官方／原廠圖：新圖放在 -v2 檔名（舊網址
 // 有 7 天快取，同名覆寫客人短期內還是看到舊的傳單裁圖），這裡把資料庫
 // 兩層的 image 從舊路徑換到 -v2；目前值不等於舊路徑就不動（後台若已
@@ -183,6 +184,9 @@ async function initialize(db: Pool) {
   );
   await db.query(
     `CREATE TABLE IF NOT EXISTS line_shop_migrations (migration_key VARCHAR(100) PRIMARY KEY, applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`
+  );
+  await db.query(
+    `CREATE TABLE IF NOT EXISTS line_shop_migration_records (migration_key VARCHAR(100) PRIMARY KEY, detail TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`
   );
   await db.query(
     `CREATE TABLE IF NOT EXISTS line_shop_stores (
@@ -1582,6 +1586,37 @@ function donkiDeadlineLine(saleEnd: string): string | null {
     `建議 ${early.getUTCMonth() + 1}/${early.getUTCDate()} 前下單，確保特價期間內為您採買。`
   );
 }
+// 訂單建立時間換算成日本（Asia/Tokyo）日期後，是否早於 cutoff
+// （YYYY-MM-DD 字串）。created_at 經 mysql2 預設回傳為 Date；若為
+// 字串（YYYY-MM-DD HH:mm:ss）則依 UTC 解析。無法解析一律 false，
+// 讓範圍判斷寧可少翻、不要誤翻。
+const JST_DATE_PARTS = new Intl.DateTimeFormat("en-US", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+export function isCreatedBeforeJstDate(
+  value: unknown,
+  cutoff: string
+): boolean {
+  let time: number;
+  if (value instanceof Date) time = value.getTime();
+  else if (typeof value === "number") time = value;
+  else if (typeof value === "string") {
+    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/.exec(
+      value.trim()
+    );
+    time = m
+      ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] ?? 0))
+      : Date.parse(value);
+  } else return false;
+  if (!Number.isFinite(time)) return false;
+  const parts = JST_DATE_PARTS.formatToParts(new Date(time));
+  const part = (type: string) =>
+    parts.find(p => p.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}` < cutoff;
+}
 async function runShopMigrations(db: Pool) {
   const conn = await db.getConnection();
   try {
@@ -1896,6 +1931,70 @@ async function runShopMigrations(db: Pool) {
               [JSON.stringify(nextAdmin), id]
             );
         }
+      }
+    );
+
+    // 2026-11-13 老闆指示：2026-11-13（日本時間）之前成立的已付款
+    // 訂單，實際上都已出貨完畢，只是後台一直掛在未出貨。直接寫入
+    // line_shop_fulfillment 補成 shipped，不走後台的狀態更新流程；
+    // 後台流程本身也只改 fulfillment、完全不寄信，本 migration
+    // 同樣不碰 line_shop_mail，不會寄出任何通知。
+    // 範圍：status='paid' 且尚無 fulfillment 列、或 fulfillment 為
+    // 'preparing'，且建立時間（換算日本日期）早於 2026-11-13。
+    // 今天的訂單 RZ-86213755-… 以 id 明確排除、完全不動；未付款、
+    // 已過期、已出貨的訂單不在範圍內。新列的物流單號留空；原本
+    // 備貨中的列保留其既有單號（不竄改既有資料）。shipped_at 比照
+    // 後台流程記為補登當下時間。翻轉清單（id、建立時間、原出貨
+    // 狀態）寫入 line_shop_migration_records 留痕，冪等由
+    // onceWithLock 的 migration_key 保證，且翻過的訂單不再符合
+    // 範圍條件，重跑也不會重複處理。
+    await onceWithLock(
+      conn,
+      "line_shop_ship_old_orders_2026_11_13",
+      SHIP_OLD_ORDERS_MIGRATION,
+      async () => {
+        const todayOrderId = "RZ-86213755-0a8b-4a07-8dd3-3830fea0f57d";
+        const [candidates] = await conn.query<RowDataPacket[]>(
+          `SELECT o.id, o.created_at, f.status AS fulfillment_status, f.tracking_number AS tracking_number
+           FROM line_shop_orders o
+           LEFT JOIN line_shop_fulfillment f ON f.order_id = o.id
+           WHERE o.status = 'paid' AND o.id <> ? AND (f.status IS NULL OR f.status = 'preparing')
+           ORDER BY o.created_at, o.id`,
+          [todayOrderId]
+        );
+        const flipped: Array<Record<string, unknown>> = [];
+        for (const row of candidates) {
+          if (!isCreatedBeforeJstDate(row.created_at, "2026-11-13"))
+            continue;
+          const tracking =
+            typeof row.tracking_number === "string"
+              ? row.tracking_number
+              : "";
+          await conn.execute(
+            "INSERT INTO line_shop_fulfillment (order_id,status,tracking_number,shipped_at) VALUES (?,?,?,CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE status='shipped', shipped_at=COALESCE(shipped_at,CURRENT_TIMESTAMP)",
+            [row.id, "shipped", tracking]
+          );
+          flipped.push({
+            id: row.id,
+            createdAt:
+              row.created_at instanceof Date
+                ? row.created_at.toISOString()
+                : String(row.created_at),
+            previousFulfillmentStatus:
+              row.fulfillment_status ?? "awaiting_preparation",
+            trackingNumber: tracking,
+          });
+        }
+        await conn.execute(
+          "INSERT INTO line_shop_migration_records (migration_key, detail) VALUES (?, ?)",
+          [
+            SHIP_OLD_ORDERS_MIGRATION,
+            JSON.stringify({ count: flipped.length, orders: flipped }),
+          ]
+        );
+        console.log(
+          `[line-shop] ${SHIP_OLD_ORDERS_MIGRATION}: marked ${flipped.length} pre-2026-11-13 paid order(s) as shipped`
+        );
       }
     );
   } finally {
