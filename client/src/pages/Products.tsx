@@ -70,7 +70,7 @@ export default function Products() {
   
   const elderlyCareCategories = categories.filter(cat => 
     ['健康監測', '安全監控', '床邊照護', '復健器材', '行動輔助', '衛浴安全', '護理用品', '生活輔具'].includes(cat.name) ||
-    ['拐杖', '助行器', '介護鞋', '輪椅移位', '入浴用品', '如廁照護', '成人紙尿褲', '介護床寢具', '防褥瘡', '安全扶手', '餐具圍兜'].includes(cat.name) ||
+    ['銀髮親子', '拐杖', '助行器', '介護鞋', '輪椅移位', '入浴用品', '如廁照護', '成人紙尿褲', '介護床寢具', '防褥瘡', '安全扶手', '餐具圍兜'].includes(cat.name) ||
     ['Health Monitoring', 'Safety Monitoring', 'Bedside Care', 'Rehabilitation', 'Mobility Aids', 'Bathroom Safety', 'Nursing Supplies', 'Daily Living Aids'].includes(cat.name) ||
     ['健康モニタリング', '安全監視', 'ベッドサイドケア', 'リハビリ機器', '移動補助', '浴室安全', '介護用品', '生活補助具'].includes(cat.name)
   );
