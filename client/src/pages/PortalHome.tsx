@@ -38,6 +38,7 @@ const MAIN_BUSINESSES = [
 
 const COMPANY_ROWS = [
   { label: "商号", value: "ろかいずみ合同会社" },
+  { label: "設立", value: "2026年1月5日" },
   { label: "法人番号", value: "3120003031622" },
   { label: "代表社員", value: "羅暐婷" },
   {
@@ -186,19 +187,62 @@ export function PortalHome() {
             </div>
           </div>
 
-          {/* その他の入口 */}
-          <div className="mt-6 grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0ABAB5] text-white">
-                <Building2 className="h-5 w-5" aria-hidden="true" />
+          {/* 介護・卸売（主入口の第二段） */}
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <a
+              href="/care"
+              className="group flex flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-sky-900/10"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#014488] text-white">
+                <HeartHandshake className="h-6 w-6" aria-hidden="true" />
               </span>
-              <h3 className="mt-3 text-base font-extrabold text-slate-900 sm:text-lg">
-                卸売・B2B
+              <h3 className="mt-4 text-lg font-extrabold text-slate-900 sm:text-xl">
+                職人厳選介護用品
               </h3>
               <p className="mt-0.5 text-xs font-bold text-slate-400">
-                批發・企業採購
+                介護用品出口・台灣
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">
+                介護用品・福祉用具の輸出入及び販売。日本の介護用品を選定し、台湾のご家庭・施設へお届けします（取扱い12分類・約258品項）
+              </p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#014488]">
+                介護用品のご案内
+                <ArrowRight
+                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </span>
+            </a>
+
+            {/* 卸売・B2B（カード内に個別リンクがあるため、全面リンクはオーバーレイ方式） */}
+            <div className="group relative flex flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-sky-900/10">
+              <Link
+                href="/ag"
+                aria-label="卸売・B2B（山田化學カタログ）を見る"
+                className="absolute inset-0 rounded-2xl"
+              />
+              <div className="pointer-events-none flex flex-1 flex-col">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0ABAB5] text-white">
+                  <Building2 className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <h3 className="mt-4 text-lg font-extrabold text-slate-900 sm:text-xl">
+                  卸売・B2B
+                </h3>
+                <p className="mt-0.5 text-xs font-bold text-slate-400">
+                  批發
+                </p>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">
+                  山田化学・KOKUBO等の日本製品の卸売カタログを取り扱っています。法人・施設の批量採購もこちらから
+                </p>
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#087F7B]">
+                  卸売カタログを見る
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
+                </span>
+              </div>
+              <div className="relative z-10 mt-4 flex flex-wrap gap-2">
                 <Link
                   href="/ag"
                   className="rounded-lg bg-[#0ABAB5]/10 px-3 py-2 text-sm font-bold text-[#087F7B] transition hover:bg-[#0ABAB5]/20"
@@ -219,49 +263,17 @@ export function PortalHome() {
                 </Link>
               </div>
             </div>
+          </div>
 
-            <Link
-              href="/products?category=care"
-              className="group block rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#014488] text-white">
-                <HeartHandshake className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <h3 className="mt-3 text-base font-extrabold text-slate-900 sm:text-lg">
-                職人厳選 介護用品
-              </h3>
-              <p className="mt-0.5 text-xs font-bold text-slate-400">
-                嚴選介護用品
-              </p>
-              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#014488]">
-                商品を見る
-                <ArrowRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                  aria-hidden="true"
-                />
-              </span>
-            </Link>
-
+          {/* その他のご案内 */}
+          <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
+            <span className="font-bold text-slate-400">その他のご案内</span>
             <Link
               href="/women"
-              className="group block rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-white px-4 py-2 font-bold text-[#A87F45] transition hover:bg-sky-50"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#C49A5E] text-white">
-                <Sparkles className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <h3 className="mt-3 text-base font-extrabold text-slate-900 sm:text-lg">
-                女性向けセレクション
-              </h3>
-              <p className="mt-0.5 text-xs font-bold text-slate-400">
-                屬於女人的方向
-              </p>
-              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#A87F45]">
-                商品を見る
-                <ArrowRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
-                  aria-hidden="true"
-                />
-              </span>
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              女性向けセレクション
             </Link>
           </div>
         </section>
