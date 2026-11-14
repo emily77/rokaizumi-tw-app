@@ -10,6 +10,7 @@ import { NetworkStatusBanner } from "./components/NetworkStatusBanner";
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const LinboAI = lazy(() => import("./pages/LinboAI"));
+const Care = lazy(() => import("./pages/Care"));
 const PortalDirectory = lazy(() => import("./pages/PortalDirectory"));
 const PortalHome = lazy(() => import("./pages/PortalHome"));
 const Women = lazy(() => import("./pages/Women"));
@@ -62,6 +63,7 @@ function Router() {
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/"} component={PortalHome} />
       <Route path={"/linbo-ai"} component={LinboAI} />
+      <Route path={"/care"} component={Care} />
       <Route path={"/services"} component={PortalDirectory} />
       <Route path={"/news"} component={PortalDirectory} />
       <Route path={"/support"} component={PortalDirectory} />
