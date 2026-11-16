@@ -103,6 +103,7 @@ const DONKI_OFFICIAL_IMAGES_CYCLE2_MIGRATION =
   "2026-11-16-donki-official-images-cycle2";
 const TUNEWAVE_MODEL_MIGRATION = "2026-11-12-tunewave-model-dkod";
 const SHIP_OLD_ORDERS_MIGRATION = "2026-11-13-ship-orders-before-today";
+const ROMND_FAUX_LASH_MIGRATION = "2026-11-16-romnd-faux-lash-name";
 // 2026-11-12 唐吉訶德商品圖換成官方／原廠圖：新圖放在 -v2 檔名（舊網址
 // 有 7 天快取，同名覆寫客人短期內還是看到舊的傳單裁圖），這裡把資料庫
 // 兩層的 image 從舊路徑換到 -v2；目前值不等於舊路徑就不動（後台若已
@@ -2067,6 +2068,57 @@ async function runShopMigrations(db: Pool) {
         console.log(
           `[line-shop] ${SHIP_OLD_ORDERS_MIGRATION}: marked ${flipped.length} pre-2026-11-13 paid order(s) as shipped`
         );
+      }
+    );
+
+    // 2026-11-16 DON-ES-030（rom&nd 睫毛膏）品名更正：種子目錄把品名
+    // 寫成「Han All Fix」，實際商品（日文名「ハンオール フォックス
+    // ラッシュ」、傳單與已上線的官方圖皆然）是 Han All Faux Lash。
+    // data_json／admin_json 兩層所有字串欄位逐一掃描替換（name／desc
+    // 等哪裡有就改哪裡，與 tunewave 型號更正相同原則）；沒有
+    // 「Han All Fix」就不寫入，重跑無副作用。種子目錄檔已同步更正
+    // （前台 customerDescriptions 讀種子檔）。只動這一件。
+    await onceWithLock(
+      conn,
+      "line_shop_romnd_faux_lash_2026_11_16",
+      ROMND_FAUX_LASH_MIGRATION,
+      async () => {
+        const id = "DON-ES-030";
+        const [rows] = await conn.query<RowDataPacket[]>(
+          "SELECT data_json,admin_json FROM line_shop_products WHERE id=?",
+          [id]
+        );
+        const row = rows[0];
+        if (!row) return;
+        const fixLayer = (
+          obj: Record<string, unknown>
+        ): Record<string, unknown> | null => {
+          let changed = false;
+          const next: Record<string, unknown> = { ...obj };
+          for (const [key, value] of Object.entries(next)) {
+            if (typeof value === "string" && value.includes("Han All Fix")) {
+              next[key] = value.split("Han All Fix").join("Han All Faux Lash");
+              changed = true;
+            }
+          }
+          return changed ? next : null;
+        };
+        const stored = parsed<Record<string, unknown>>(row.data_json);
+        const nextStored = fixLayer(stored);
+        if (nextStored)
+          await conn.execute(
+            "UPDATE line_shop_products SET data_json=? WHERE id=?",
+            [JSON.stringify(nextStored), id]
+          );
+        if (row.admin_json) {
+          const admin = parsed<Record<string, unknown>>(row.admin_json);
+          const nextAdmin = fixLayer(admin);
+          if (nextAdmin)
+            await conn.execute(
+              "UPDATE line_shop_products SET admin_json=? WHERE id=?",
+              [JSON.stringify(nextAdmin), id]
+            );
+        }
       }
     );
   } finally {
