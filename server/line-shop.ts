@@ -99,6 +99,8 @@ const STOCK_TOPUP_MIGRATION = "2026-11-12-stock-topup-10";
 const EXCLUSIVE_DELIST_MIGRATION = "2026-11-12-exclusive-delist";
 const DONKI_DEADLINE_MIGRATION = "2026-11-12-donki-deadline-copy";
 const DONKI_OFFICIAL_IMAGES_MIGRATION = "2026-11-12-donki-official-images";
+const DONKI_OFFICIAL_IMAGES_CYCLE2_MIGRATION =
+  "2026-11-16-donki-official-images-cycle2";
 const TUNEWAVE_MODEL_MIGRATION = "2026-11-12-tunewave-model-dkod";
 const SHIP_OLD_ORDERS_MIGRATION = "2026-11-13-ship-orders-before-today";
 // 2026-11-12 唐吉訶德商品圖換成官方／原廠圖：新圖放在 -v2 檔名（舊網址
@@ -135,6 +137,41 @@ const DONKI_OFFICIAL_IMAGE_IDS = [
   "DON-ES-013",
   "DON-ES-014",
   "DON-ES-015",
+];
+// 2026-11-16 第二輪：Dstyle 批 DON-ES-016..066 中找到合格官方圖的 30 件
+// （清單與保留理由見 ~/workspace/donki/official-img/manifest-cycle2.md），
+// 同樣換到 -v2 檔名；其餘 21 件維持傳單裁圖不動。
+const DONKI_OFFICIAL_IMAGE_CYCLE2_IDS = [
+  "DON-ES-016",
+  "DON-ES-017",
+  "DON-ES-018",
+  "DON-ES-019",
+  "DON-ES-020",
+  "DON-ES-021",
+  "DON-ES-024",
+  "DON-ES-027",
+  "DON-ES-028",
+  "DON-ES-029",
+  "DON-ES-030",
+  "DON-ES-031",
+  "DON-ES-034",
+  "DON-ES-039",
+  "DON-ES-040",
+  "DON-ES-042",
+  "DON-ES-045",
+  "DON-ES-046",
+  "DON-ES-048",
+  "DON-ES-049",
+  "DON-ES-052",
+  "DON-ES-054",
+  "DON-ES-055",
+  "DON-ES-056",
+  "DON-ES-057",
+  "DON-ES-058",
+  "DON-ES-060",
+  "DON-ES-062",
+  "DON-ES-063",
+  "DON-ES-064",
 ];
 let pool: Pool | undefined;
 let initialization: Promise<void> | undefined;
@@ -1858,6 +1895,41 @@ async function runShopMigrations(db: Pool) {
       DONKI_OFFICIAL_IMAGES_MIGRATION,
       async () => {
         for (const id of DONKI_OFFICIAL_IMAGE_IDS) {
+          const from = `/line-shop/img/${id}.webp`;
+          const to = `/line-shop/img/${id}-v2.webp`;
+          const [rows] = await conn.query<RowDataPacket[]>(
+            "SELECT data_json,admin_json FROM line_shop_products WHERE id=?",
+            [id]
+          );
+          const row = rows[0];
+          if (!row) continue;
+          const stored = parsed<Record<string, unknown>>(row.data_json);
+          if (stored.image === from)
+            await conn.execute(
+              "UPDATE line_shop_products SET data_json=? WHERE id=?",
+              [JSON.stringify({ ...stored, image: to }), id]
+            );
+          if (row.admin_json) {
+            const admin = parsed<Record<string, unknown>>(row.admin_json);
+            if (admin.image === from)
+              await conn.execute(
+                "UPDATE line_shop_products SET admin_json=? WHERE id=?",
+                [JSON.stringify({ ...admin, image: to }), id]
+              );
+          }
+        }
+      }
+    );
+
+    // 2026-11-16 唐吉訶德商品圖換官方圖第二輪（Dstyle 批，-v2 檔名，
+    // 理由同第一輪）。作法與第一輪完全相同：哪一層的 image 還等於舊
+    // 路徑就換哪一層。
+    await onceWithLock(
+      conn,
+      "line_shop_donki_official_images_cycle2_2026_11_16",
+      DONKI_OFFICIAL_IMAGES_CYCLE2_MIGRATION,
+      async () => {
+        for (const id of DONKI_OFFICIAL_IMAGE_CYCLE2_IDS) {
           const from = `/line-shop/img/${id}.webp`;
           const to = `/line-shop/img/${id}-v2.webp`;
           const [rows] = await conn.query<RowDataPacket[]>(
