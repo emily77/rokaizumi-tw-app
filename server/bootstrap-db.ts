@@ -375,6 +375,87 @@ async function cleanupCareCatalog(pool: any) {
 }
 
 /**
+ * 事業計畫書指定仕入先產品上架（2026-11-17，data_jobs 標記後不再重跑）：
+ * 自計畫書 5 家仕入先的官方商店／官方目錄核實的 23 項產品
+ * （シナノ 6、ケープ 6、高田ベッド製作所 6、トリニティ 5）。
+ * 比照介護區政策：本站價格歸零走詢價，日本官方定價存 priceJpy
+ * 並註明於規格欄，僅供詢價時參考。品名已存在者不重複新增。
+ */
+async function seedSupplierProducts(pool: any) {
+  await pool.query(
+    'CREATE TABLE IF NOT EXISTS data_jobs (name VARCHAR(100) PRIMARY KEY, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'
+  );
+  const [[{ n }]]: any = await pool.query(
+    "SELECT COUNT(*) AS n FROM data_jobs WHERE name = 'supplier-products-2026-11-17'"
+  );
+  if (Number(n) > 0) return;
+
+  const items: {
+    name: string;
+    code: string;
+    category: string;
+    priceJpy: number;
+    imageUrl: string;
+    specifications: string;
+    description: string;
+  }[] = [
+    // 株式会社シナノ（公式オンラインストア）
+    { name: 'やわらGELグリップ4点杖 TYPE-U', code: 'TAIS 01436-000009', category: '拐杖', priceJpy: 23000, imageUrl: 'https://sinano.co.jp/store/product/stick/yawaragel-type-u/type-u-01.webp', specifications: '型番：TAIS 01436-000009／メーカー：株式会社シナノ／日本参考価格：¥23,000（非課税）', description: 'GELグリップとオフセットネックを採用した4点杖。約525g、長さ70〜90cm対応。介護保険貸与対象品。' },
+    { name: 'やわらGELグリップ4点杖', code: 'TAIS 01436-000007', category: '拐杖', priceJpy: 20000, imageUrl: 'https://kainos.jp/softgrip/images/YGG4_01.png', specifications: '型番：TAIS 01436-000007／メーカー：株式会社シナノ／日本参考価格：¥20,000（非課税）', description: '約380gの軽量4点杖。VESSEL×SINANO共同開発のGELグリップ採用。' },
+    { name: 'しっかり2本杖', code: '184837304', category: '拐杖', priceJpy: 14300, imageUrl: 'https://sinano.co.jp/store/product/walking/shikkari2hon/shikkari2-02.webp', specifications: '商品番号：184837304（シナノオンラインストア）／メーカー：株式会社シナノ／日本参考価格：¥14,300（税込・2本1組）', description: '歩行サポートSG規格取得の2本杖。1本あたり耐荷重69kg、リハビリ歩行訓練にも。' },
+    { name: '伸縮杖 結 -yui-', code: '158335444', category: '拐杖', priceJpy: 9900, imageUrl: 'https://sinano.co.jp/store/product/stick/yui/158335444_o6.webp', specifications: '商品番号：158335444（シナノオンラインストア）／メーカー：株式会社シナノ／日本参考価格：¥9,900（税込）', description: '公式ストア限定の伸縮杖。日本の伝統色 全12色、花梨木グリップ、約245g。' },
+    { name: 'LUMINA ルミナ 折り畳み', code: '193549783', category: '拐杖', priceJpy: 26400, imageUrl: 'https://sinano.co.jp/store/product/stick/lumina/rumi-01.webp', specifications: '商品番号：193549783（シナノオンラインストア）／メーカー：株式会社シナノ／日本参考価格：¥26,400（税込）', description: '日本製折り畳み杖。光で色合いが変わるラメ調仕上げ、収納時約31cm、収納袋付き。' },
+    { name: 'ベーシックライト', code: '153721112', category: '拐杖', priceJpy: 20900, imageUrl: 'https://sinano.co.jp/store/product/stick/basiclight/basiclight_img01.webp', specifications: '商品番号：153721112（シナノオンラインストア）／メーカー：株式会社シナノ／日本参考価格：¥20,900（税込）', description: '同社折り畳み杖で最軽量クラス（約250〜260g）。3段折り畳み、収納袋付き。' },
+    // 株式会社ケープ（公式製品ページ）
+    { name: 'マイクロクライメイト ネクサス アイビー', code: 'CR-770', category: '防褥瘡', priceJpy: 220000, imageUrl: 'https://www.cape.co.jp/wpMgr/wp-content/themes/cape/assets/img/products/pdt043/key/fig-key01-1.jpg', specifications: '型番：CR-770／CR-773／CR-775／CR-777／CR-781／メーカー：株式会社ケープ／日本参考価格：セット ¥220,000＋税（1000型 ¥240,000＋税）', description: 'ファンでマットレス内の熱と湿気を排出するエアマットレス。傾斜型2層エアセルで背上げ時のずれを軽減。' },
+    { name: 'スモールチェンジ ラグーナ', code: 'CR-700', category: '防褥瘡', priceJpy: 258000, imageUrl: 'https://www.cape.co.jp/wpMgr/wp-content/themes/cape/assets/img/products/pdt001/fig-key1-1.png', specifications: '型番：CR-700／CR-703／CR-705／CR-707／CR-711／メーカー：株式会社ケープ／日本参考価格：セット ¥258,000（非課税、1000型 ¥278,000）', description: '自動で小さな対角線体位変換を行うエアマットレス。夜間の介護負担を軽減（体位変換器として非課税）。' },
+    { name: 'エアドクター', code: 'CR-238', category: '防褥瘡', priceJpy: 125000, imageUrl: 'https://www.cape.co.jp/wpMgr/wp-content/themes/cape/assets/img/products/pdt005/fig01-1.jpg', specifications: '型番：CR-238／CR-268／メーカー：株式会社ケープ／日本参考価格：セット ¥125,000（税抜）', description: '体重設定ダイヤルとセンサーで自動圧力コントロール。20本のエアセルが交互に膨縮。' },
+    { name: 'デュオジェルクッション', code: 'CK-385', category: '輪椅移位', priceJpy: 45000, imageUrl: 'https://www.cape.co.jp/wpMgr/wp-content/themes/cape/assets/img/products/pdt023/fig1-1.jpg', specifications: '型番：CK-385／CK-395／メーカー：株式会社ケープ／日本参考価格：¥45,000（税抜）', description: '車いす用クッション。後部ジェルでお尻を包み、前部TRUGELで大腿部を支えるU字構造で圧力を分散。' },
+    { name: 'ドライアルファシーツ', code: 'CK-403', category: '介護床寢具', priceJpy: 8900, imageUrl: 'https://www.cape.co.jp/wpMgr/wp-content/themes/cape/assets/img/products/pdt028/fig1-1.jpg', specifications: '型番：CK-403 ¥8,900／CK-404 ¥11,500／CK-402 ¥5,000（いずれも税抜）／メーカー：株式会社ケープ', description: '吸水速乾素材「アクエアー®」のシーツ。汗や水分を素早く吸収し、丸洗い可能。' },
+    { name: 'ケープ介助グローブ', code: 'CK-388', category: '輪椅移位', priceJpy: 2500, imageUrl: 'https://www.cape.co.jp/wpMgr/wp-content/themes/cape/assets/img/products/pdt030/fig1-1.jpg', specifications: '型番：CK-388／メーカー：株式会社ケープ／日本参考価格：¥2,500（税抜）', description: '体の下に手を差し入れてずれを直す介助用グローブ。滑りの良い素材で丸洗い可能。' },
+    // 株式会社高田ベッド製作所（公式総合カタログ Vol.29）
+    { name: 'HAマットレス', code: 'TB-1161', category: '介護床寢具', priceJpy: 39000, imageUrl: '', specifications: '型番：TB-1161／メーカー：株式会社高田ベッド製作所／日本参考価格：¥39,000（税別）', description: '適度な硬さのマットレス。綿100%の側地は洗濯可能、厚さ6cm。' },
+    { name: 'ロングパラレルDX（01）', code: 'TB-1078-01', category: '助行器', priceJpy: 190000, imageUrl: '', specifications: '型番：TB-1078-01／メーカー：株式会社高田ベッド製作所／日本参考価格：¥190,000（税別）', description: 'ステンレス製平行棒。高さ15段階ラチェット昇降、握り幅は無段階調節。歩行訓練用。' },
+    { name: '介助シート', code: 'TB-981', category: '輪椅移位', priceJpy: 14800, imageUrl: '', specifications: '型番：TB-981／メーカー：株式会社高田ベッド製作所／日本参考価格：¥14,800（税別）', description: '8か所の持ち手付き移乗・搬送介助シート。ナイロン製防水仕様、48×170cm。' },
+    { name: '体位変換マット', code: 'TB-77-69', category: '防褥瘡', priceJpy: 9100, imageUrl: '', specifications: '型番：TB-77-69／メーカー：株式会社高田ベッド製作所／日本参考価格：¥9,100（税別）', description: '三角枕2個セットの体位変換マット。綿100%で洗濯可能。' },
+    { name: 'トイレ補助手すり', code: 'TB-1426', category: '如廁照護', priceJpy: 21000, imageUrl: '', specifications: '型番：TB-1426／メーカー：株式会社高田ベッド製作所／日本参考価格：¥21,000（税別）', description: '置くだけで使えるトイレ用立ち座り手すり。工事不要、高さ調整脚付き。' },
+    { name: '車イス用安全ベルト', code: 'TB-1451', category: '輪椅移位', priceJpy: 7600, imageUrl: '', specifications: '型番：TB-1451／メーカー：株式会社高田ベッド製作所／日本参考価格：¥7,600（税別）', description: 'ワンタッチで装着できる車イス用安全ベルト。体格に合わせて調節可能（拘束用ではありません）。' },
+    // 株式会社トリニティ（公式通販キテコ／TCマート取扱品）
+    { name: '伸縮ジョイントレザーステッキ', code: 's0662', category: '拐杖', priceJpy: 8970, imageUrl: '', specifications: '商品番号：s0662／販売：株式会社トリニティ（キテコ）／日本参考価格：¥8,970', description: '長さ66〜96.5cm・13段階伸縮、約280gのアルミ製ステッキ。SGマーク取得、二重成型グリップ。' },
+    { name: 'シルバーカー 軽量 アソシエ ゼブラ・デイジー・牡丹', code: 'ws0234', category: '助行器', priceJpy: 13360, imageUrl: 'https://item-shopping.c.yimg.jp/i/j/tc-mart_ws0234', specifications: '商品番号：ws0234／販売：株式会社トリニティ（キテコ）／日本参考価格：¥13,360', description: '約3.15kgの超軽量折りたたみシルバーカー。LEDライトと杖・傘ホルダー付き、SGマーク取得。' },
+    { name: '介護用三輪歩行器 ターンウォーカー', code: 'wh0276', category: '助行器', priceJpy: 21870, imageUrl: 'https://item-shopping.c.yimg.jp/i/j/tc-mart_wh0276', specifications: '商品コード：wh0276／販売：株式会社トリニティ（キテコ）／日本参考価格：¥21,870', description: '小回りの利く三輪歩行器。大型ブレーキレバー、高さ5段階調節、折りたたみ収納可能、6.15kg。' },
+    { name: '車椅子 軽量 折りたたみ コンパクト アルミ超軽量折り畳み介助用ハンディライトプラス', code: 'kc0021', category: '輪椅移位', priceJpy: 42670, imageUrl: 'https://item-shopping.c.yimg.jp/i/j/tc-mart_kc0021', specifications: '商品コード：kc0021／メーカー：ユーキ・トレーディング／販売：株式会社トリニティ（キテコ）／日本参考価格：¥42,670', description: '約8.2kgの超軽量アルミ製介助用車椅子。折りたたみ幅25cm、収納袋と介助ブレーキ付き。' },
+    { name: '介護用品 靴すたこらさんソフト 05', code: 'sh0218-2z', category: '介護鞋', priceJpy: 6530, imageUrl: 'https://item-shopping.c.yimg.jp/i/j/tc-mart_sh0218-2z', specifications: '商品コード：sh0218-2z／販売：株式会社トリニティ（キテコ）／日本参考価格：¥6,530', description: '柔らかく履きやすい高齢者向け屋外用介護靴。' },
+  ];
+
+  let added = 0;
+  for (const it of items) {
+    const [r]: any = await pool.query(
+      `INSERT INTO products (name, jan, code, nameJa, nameEn, origin, priceJpy, description, price, categoryId, imageUrl, images, status, specifications, stock)
+       SELECT ?, NULL, ?, ?, NULL, '日本', ?, ?, 0, c.id, ?, ?, 'available', ?, 99
+       FROM categories c WHERE c.name = ?
+         AND NOT EXISTS (SELECT 1 FROM products p WHERE p.name = ?)`,
+      [
+        it.name,
+        it.code,
+        it.name,
+        it.priceJpy,
+        it.description,
+        it.imageUrl,
+        JSON.stringify(it.imageUrl ? [it.imageUrl] : []),
+        it.specifications,
+        it.category,
+        it.name,
+      ]
+    );
+    if (r.affectedRows) added++;
+  }
+
+  await pool.query("INSERT INTO data_jobs (name) VALUES ('supplier-products-2026-11-17')");
+  console.log(`✅ 仕入先產品上架完成：新增 ${added} 筆`);
+}
+
+/**
  * 啟動時呼叫。失敗只記錄不拋出——回退機制仍會讓網站正常運作，
  * 不該因為初始化問題導致整個服務起不來。
  */
@@ -390,6 +471,7 @@ export async function bootstrapDatabase(pool: any) {
     await applyMigrations(pool);
     await seedProducts(pool);
     await cleanupCareCatalog(pool);
+    await seedSupplierProducts(pool);
   } catch (e) {
     console.error('❌ 資料庫初始化失敗:', (e as Error).message);
   }

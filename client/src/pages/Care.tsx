@@ -18,15 +18,15 @@ const CONTACT_EMAIL = "info@rokaizumi-tw.jp";
 const CARE_LIST_URL = "/products?category=care";
 
 const CATEGORIES = [
-  { name: "拐杖", count: 20 },
-  { name: "助行器", count: 19 },
-  { name: "介護鞋", count: 20 },
-  { name: "輪椅移位", count: 20 },
+  { name: "拐杖", count: 27 },
+  { name: "助行器", count: 22 },
+  { name: "介護鞋", count: 21 },
+  { name: "輪椅移位", count: 25 },
   { name: "入浴用品", count: 20 },
-  { name: "如廁照護", count: 20 },
+  { name: "如廁照護", count: 21 },
   { name: "成人紙尿褲", count: 20 },
-  { name: "介護床寢具", count: 20 },
-  { name: "防褥瘡", count: 20 },
+  { name: "介護床寢具", count: 22 },
+  { name: "防褥瘡", count: 24 },
   { name: "安全扶手", count: 20 },
   { name: "餐具圍兜", count: 15 },
 ] as const;
@@ -153,7 +153,7 @@ export function Care() {
             取扱分類
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            經銷分類・全 11 分類、214 品項
+            經銷分類・全 11 分類、237 品項
           </p>
 
           <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
