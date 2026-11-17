@@ -18,7 +18,8 @@ const CONTACT_EMAIL = "info@rokaizumi-tw.jp";
 const MAIN_BUSINESSES = [
   {
     icon: Cpu,
-    color: "#014488",
+    chipBg: "#E3ECFF",
+    accent: "#3D6DB5",
     title: "林博AI",
     subtitle: "企業 AI 顧問與研發",
     desc: "ABC_YPCloud 日本向けAIブレインの研究開発／企業向けAI戦略・DXコンサルティング（林吟芝博士主導）",
@@ -27,7 +28,8 @@ const MAIN_BUSINESSES = [
   },
   {
     icon: Flame,
-    color: "#C0562F",
+    chipBg: "#FFE8DF",
+    accent: "#C0562F",
     title: "手作りキャンドル ROKA IZUMI",
     subtitle: "手工蠟燭・澳洲販售",
     desc: "大阪で手作りするキャンドルをオーストラリアへ。20種類から5個選んで A$99（送料込み）、カード決済対応",
@@ -60,40 +62,49 @@ const COMPANY_ROWS = [
 
 export function PortalHome() {
   return (
-    <div className="min-h-screen bg-[#f5fafe] scroll-smooth">
+    <div className="min-h-screen bg-[#FFFBF8] scroll-smooth">
       <SiteHeader />
 
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#001f52] via-[#013873] to-[#0b6fb3] text-white">
+        {/* Hero（粉彩デザイン） */}
+        <section className="relative overflow-hidden bg-white">
           <div
-            className="pointer-events-none absolute inset-0 opacity-40"
-            style={{
-              background:
-                "radial-gradient(60% 80% at 78% 18%, rgba(35,167,229,0.35) 0%, rgba(35,167,229,0) 70%), radial-gradient(45% 60% at 12% 85%, rgba(96,165,250,0.25) 0%, rgba(96,165,250,0) 70%)",
-            }}
+            className="pointer-events-none absolute -top-24 -right-20 h-72 w-72 rounded-full bg-[#FFD9E3] opacity-70 blur-2xl"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute top-40 -left-24 h-80 w-80 rounded-full bg-[#CDEEE6] opacity-70 blur-2xl"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute -bottom-28 right-1/4 h-64 w-64 rounded-full bg-[#FFF0C9] opacity-80 blur-2xl"
+            aria-hidden="true"
           />
           <div className="relative container mx-auto px-4 py-14 sm:py-20">
-            <p className="text-sm font-bold tracking-widest text-sky-200 sm:text-base">
+            <p className="inline-flex items-center rounded-full bg-[#FFF0F4] px-4 py-1.5 text-sm font-bold tracking-widest text-[#B0577F] ring-1 ring-[#F5C6D6] sm:text-base">
               ろかいずみ合同会社（ROKA IZUMI LLC）
             </p>
-            <h1 className="mt-4 max-w-3xl text-3xl leading-snug font-extrabold sm:text-4xl lg:text-[2.75rem]">
-              日本の商品と産業を、AIとブロックチェーンでつなぐ
+            <h1 className="mt-5 max-w-3xl text-3xl leading-snug font-extrabold text-slate-800 sm:text-4xl lg:text-[2.75rem]">
+              日本の商品と産業を、
+              <span className="bg-gradient-to-r from-[#E86A92] to-[#2AA79E] bg-clip-text text-transparent">
+                AIとブロックチェーン
+              </span>
+              でつなぐ
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-sky-100/90 sm:text-base">
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-500 sm:text-base">
               大阪を拠点に、AI研究開発と日本商品の越境販売を行う合同会社です。
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
                 href="#business"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#014488] shadow-lg shadow-sky-900/30 transition hover:bg-sky-50 sm:text-base"
+                className="inline-flex items-center gap-2 rounded-full bg-[#F27CA7] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition hover:bg-[#E86A92] sm:text-base"
               >
                 事業内容を見る{" "}
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </a>
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20 sm:text-base"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-[#BFE8DF] bg-white px-6 py-3 text-sm font-bold text-[#1F8A80] transition hover:bg-[#F2FBF8] sm:text-base"
               >
                 <Mail className="h-4 w-4" aria-hidden="true" />
                 お問い合わせ
@@ -108,25 +119,25 @@ export function PortalHome() {
           aria-label="事業内容"
           className="container scroll-mt-24 mx-auto px-4 py-12 sm:py-16"
         >
-          <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h2 className="text-2xl font-extrabold text-slate-800 sm:text-3xl">
             事業内容
           </h2>
-          <p className="mt-1 text-sm text-slate-500">我們的業務</p>
+          <p className="mt-1 text-sm text-slate-400">我們的業務</p>
 
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {MAIN_BUSINESSES.map(b => (
               <a
                 key={b.href}
                 href={b.href}
-                className="group flex flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-sky-900/10"
+                className="group flex flex-col rounded-3xl bg-white p-6 shadow-[0_10px_35px_-12px_rgba(176,87,127,0.25)] ring-1 ring-[#F7E3EA] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-12px_rgba(176,87,127,0.35)]"
               >
                 <span
-                  className="flex h-12 w-12 items-center justify-center rounded-xl text-white"
-                  style={{ backgroundColor: b.color }}
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                  style={{ backgroundColor: b.chipBg, color: b.accent }}
                 >
                   <b.icon className="h-6 w-6" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-lg font-extrabold text-slate-900 sm:text-xl">
+                <h3 className="mt-4 text-lg font-extrabold text-slate-800 sm:text-xl">
                   {b.title}
                 </h3>
                 <p className="mt-0.5 text-xs font-bold text-slate-400">
@@ -137,7 +148,7 @@ export function PortalHome() {
                 </p>
                 <span
                   className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold"
-                  style={{ color: b.color }}
+                  style={{ color: b.accent }}
                 >
                   {b.linkLabel}
                   <ArrowRight
@@ -149,17 +160,17 @@ export function PortalHome() {
             ))}
 
             {/* LINEショップ（カード内に LINE 友だち追加リンクがあるため、全面リンクはオーバーレイ方式） */}
-            <div className="group relative flex flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-sky-900/10">
+            <div className="group relative flex flex-col rounded-3xl bg-white p-6 shadow-[0_10px_35px_-12px_rgba(6,167,85,0.25)] ring-1 ring-[#DFF3E4] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-12px_rgba(6,167,85,0.35)]">
               <a
                 href="/line-shop/"
                 aria-label="LINEショップ「ROKA IZUMI｜日本厳選商店」を見る"
-                className="absolute inset-0 rounded-2xl"
+                className="absolute inset-0 rounded-3xl"
               />
               <div className="pointer-events-none flex flex-1 flex-col">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#06C755] text-white">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#DFF7E6] text-[#06A848]">
                   <ShoppingBag className="h-6 w-6" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-lg font-extrabold text-slate-900 sm:text-xl">
+                <h3 className="mt-4 text-lg font-extrabold text-slate-800 sm:text-xl">
                   LINEショップ「ROKA IZUMI｜日本厳選商店」
                 </h3>
                 <p className="mt-0.5 text-xs font-bold text-slate-400">
@@ -168,7 +179,7 @@ export function PortalHome() {
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">
                   ドン・キホーテ、コストコ等の日本商品を台湾のお客様へ。購入代行・厳選販売
                 </p>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#06C755]">
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#06A848]">
                   ショップを見る
                   <ArrowRight
                     className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -180,7 +191,7 @@ export function PortalHome() {
                 href={LINE_FRIEND_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative z-10 mt-4 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[#06C755]/10 px-3 py-2 text-xs font-bold text-[#04953F] transition hover:bg-[#06C755]/20"
+                className="relative z-10 mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#06C755]/10 px-3 py-2 text-xs font-bold text-[#04953F] transition hover:bg-[#06C755]/20"
               >
                 LINE公式アカウント @rokaizumi
               </a>
@@ -191,21 +202,21 @@ export function PortalHome() {
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <a
               href="/care"
-              className="group flex flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-sky-900/10"
+              className="group flex flex-col rounded-3xl bg-white p-6 shadow-[0_10px_35px_-12px_rgba(14,149,144,0.25)] ring-1 ring-[#D8F0EA] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-12px_rgba(14,149,144,0.35)]"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#014488] text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#DFF5EF] text-[#0E9590]">
                 <HeartHandshake className="h-6 w-6" aria-hidden="true" />
               </span>
-              <h3 className="mt-4 text-lg font-extrabold text-slate-900 sm:text-xl">
+              <h3 className="mt-4 text-lg font-extrabold text-slate-800 sm:text-xl">
                 職人厳選介護用品
               </h3>
               <p className="mt-0.5 text-xs font-bold text-slate-400">
                 介護用品出口・台灣
               </p>
               <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">
-                介護用品・福祉用具の輸出入及び販売。日本の介護用品を選定し、台湾のご家庭・施設へお届けします（取扱い12分類・約258品項）
+                介護用品・福祉用具の輸出入及び販売。日本の介護用品を選定し、台湾のご家庭・施設へお届けします（取扱い11分類・237品項、価格はお問い合わせ制）
               </p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#014488]">
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#0E9590]">
                 介護用品のご案内
                 <ArrowRight
                   className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -215,17 +226,17 @@ export function PortalHome() {
             </a>
 
             {/* 卸売・B2B（カード内に個別リンクがあるため、全面リンクはオーバーレイ方式） */}
-            <div className="group relative flex flex-col rounded-2xl border border-sky-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-sky-900/10">
+            <div className="group relative flex flex-col rounded-3xl bg-white p-6 shadow-[0_10px_35px_-12px_rgba(176,126,43,0.25)] ring-1 ring-[#F7EBD2] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-12px_rgba(176,126,43,0.35)]">
               <Link
                 href="/ag"
                 aria-label="卸売・B2B（山田化學カタログ）を見る"
-                className="absolute inset-0 rounded-2xl"
+                className="absolute inset-0 rounded-3xl"
               />
               <div className="pointer-events-none flex flex-1 flex-col">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0ABAB5] text-white">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF0DB] text-[#B07E2B]">
                   <Building2 className="h-6 w-6" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-lg font-extrabold text-slate-900 sm:text-xl">
+                <h3 className="mt-4 text-lg font-extrabold text-slate-800 sm:text-xl">
                   卸売・B2B
                 </h3>
                 <p className="mt-0.5 text-xs font-bold text-slate-400">
@@ -234,7 +245,7 @@ export function PortalHome() {
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">
                   山田化学・KOKUBO等の日本製品の卸売カタログを取り扱っています。法人・施設の批量採購もこちらから
                 </p>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#087F7B]">
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#B07E2B]">
                   卸売カタログを見る
                   <ArrowRight
                     className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -245,19 +256,19 @@ export function PortalHome() {
               <div className="relative z-10 mt-4 flex flex-wrap gap-2">
                 <Link
                   href="/ag"
-                  className="rounded-lg bg-[#0ABAB5]/10 px-3 py-2 text-sm font-bold text-[#087F7B] transition hover:bg-[#0ABAB5]/20"
+                  className="rounded-full bg-[#0ABAB5]/10 px-3 py-2 text-sm font-bold text-[#087F7B] transition hover:bg-[#0ABAB5]/20"
                 >
                   山田化學
                 </Link>
                 <Link
                   href="/koku"
-                  className="rounded-lg bg-[#DC2626]/10 px-3 py-2 text-sm font-bold text-[#B91C1C] transition hover:bg-[#DC2626]/20"
+                  className="rounded-full bg-[#DC2626]/10 px-3 py-2 text-sm font-bold text-[#B91C1C] transition hover:bg-[#DC2626]/20"
                 >
                   KOKUBO
                 </Link>
                 <Link
                   href="/b2b"
-                  className="rounded-lg border border-[#E26D5C] px-3 py-2 text-sm font-bold text-[#E26D5C] transition hover:bg-[#E26D5C]/10"
+                  className="rounded-full border border-[#E26D5C] px-3 py-2 text-sm font-bold text-[#E26D5C] transition hover:bg-[#E26D5C]/10"
                 >
                   企業採購
                 </Link>
@@ -270,7 +281,7 @@ export function PortalHome() {
             <span className="font-bold text-slate-400">その他のご案内</span>
             <Link
               href="/women"
-              className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-white px-4 py-2 font-bold text-[#A87F45] transition hover:bg-sky-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#F5C6D6] bg-white px-4 py-2 font-bold text-[#A87F45] transition hover:bg-[#FFF5F7]"
             >
               <Sparkles className="h-4 w-4" aria-hidden="true" />
               女性向けセレクション
@@ -284,22 +295,22 @@ export function PortalHome() {
           aria-label="会社概要"
           className="container scroll-mt-24 mx-auto px-4 pb-12 sm:pb-16"
         >
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-sky-100 sm:p-10">
-            <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <div className="rounded-[2rem] border-2 border-dashed border-[#F5C6D6] bg-white p-6 sm:p-10">
+            <h2 className="text-2xl font-extrabold text-slate-800 sm:text-3xl">
               会社概要
             </h2>
-            <p className="mt-1 text-sm text-slate-500">公司資料</p>
-            <div className="mt-6 overflow-hidden rounded-2xl border border-sky-100">
+            <p className="mt-1 text-sm text-slate-400">公司資料</p>
+            <div className="mt-6 overflow-hidden rounded-3xl ring-1 ring-[#F7E3EA]">
               <table className="w-full text-left text-sm sm:text-base">
                 <tbody>
                   {COMPANY_ROWS.map((row, i) => (
                     <tr
                       key={row.label}
-                      className={i % 2 === 0 ? "bg-[#f0f7fe]" : "bg-white"}
+                      className={i % 2 === 0 ? "bg-[#FFF5F7]" : "bg-[#F2FBF8]"}
                     >
                       <th
                         scope="row"
-                        className="w-32 shrink-0 px-4 py-3 align-top font-bold text-[#014488] sm:w-44 sm:px-5"
+                        className="w-32 shrink-0 px-4 py-3 align-top font-bold text-[#B0577F] sm:w-44 sm:px-5"
                       >
                         {row.label}
                       </th>
@@ -319,16 +330,18 @@ export function PortalHome() {
           aria-label="お問い合わせ"
           className="container mx-auto px-4 pb-14 sm:pb-20"
         >
-          <div className="rounded-3xl bg-gradient-to-br from-[#001f52] to-[#0b6fb3] p-8 text-center text-white sm:p-10">
-            <h2 className="text-xl font-extrabold sm:text-2xl">お問い合わせ</h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-sky-100/90">
+          <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#FFE3EC] via-[#FFF3D6] to-[#D8F3EC] p-8 text-center sm:p-10">
+            <h2 className="text-xl font-extrabold text-slate-800 sm:text-2xl">
+              お問い合わせ
+            </h2>
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-slate-600">
               事業・商品に関するご相談は、メールまたは LINE
               公式アカウントからお気軽にご連絡ください。
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#014488] shadow-lg shadow-sky-900/30 transition hover:bg-sky-50"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-[#B0577F] shadow-lg shadow-pink-200/60 transition hover:bg-[#FFF5F7]"
               >
                 <Mail className="h-4 w-4" aria-hidden="true" />
                 {CONTACT_EMAIL}
@@ -337,7 +350,7 @@ export function PortalHome() {
                 href={LINE_FRIEND_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#06C755] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#05A948]"
+                className="inline-flex items-center gap-2 rounded-full bg-[#06C755] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#05A948]"
               >
                 LINE公式アカウント @rokaizumi
               </a>
