@@ -18,9 +18,8 @@ const CONTACT_EMAIL = "info@rokaizumi-tw.jp";
 const CARE_LIST_URL = "/products?category=care";
 
 const CATEGORIES = [
-  { name: "銀髮親子", count: 38 },
   { name: "拐杖", count: 20 },
-  { name: "助行器", count: 20 },
+  { name: "助行器", count: 19 },
   { name: "介護鞋", count: 20 },
   { name: "輪椅移位", count: 20 },
   { name: "入浴用品", count: 20 },
@@ -29,13 +28,13 @@ const CATEGORIES = [
   { name: "介護床寢具", count: 20 },
   { name: "防褥瘡", count: 20 },
   { name: "安全扶手", count: 20 },
-  { name: "餐具圍兜", count: 20 },
+  { name: "餐具圍兜", count: 15 },
 ] as const;
 
 const SERVICES = [
   {
     title: "依情境分類整理",
-    desc: "日本國內流通的介護・生活支援商品，依使用情境分類整理，商品頁標示規格與價格，先看懂再下單。",
+    desc: "日本國內流通的介護・生活支援商品，依使用情境分類整理，商品頁標示規格，價格採詢價確認，先看懂再決定。",
   },
   {
     title: "先諮詢，再選品",
@@ -51,7 +50,7 @@ const STEPS = [
   {
     icon: Search,
     title: "選品或詢價",
-    desc: "從商品頁選購，或用 LINE／email 告訴我們需求。",
+    desc: "從商品頁查看規格，或用 LINE／email 告訴我們需求。",
   },
   {
     icon: ClipboardList,
@@ -154,7 +153,7 @@ export function Care() {
             取扱分類
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            經銷分類・全 12 分類、約 258 品項
+            經銷分類・全 11 分類、214 品項
           </p>
 
           <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">

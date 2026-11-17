@@ -272,6 +272,108 @@ async function seedProducts(pool: any) {
   console.log(`✅ 已匯入 ${done} 筆商品、${catId.size} 個分類`);
 }
 
+
+/**
+ * 介護目錄一次性整理（2026-11-17，data_jobs 標記後不再重跑）：
+ * 1. 介護 11 分類＋銀髮親子的商品價格全數歸零——本站已有「價格待確認」
+ *    機制（price 非正數即顯示『價格待確認，請聯絡我們』且不可下單），
+ *    歸零後這些商品一律改走詢價，不再顯示搬運自日本目錄的參考價。
+ * 2. 同商品的顏色／尺寸變體合併為一筆：保留一筆改名並在規格註明
+ *    款式，其餘刪除；已被訂單／購物車／評論／願望清單參照的列不刪。
+ */
+async function cleanupCareCatalog(pool: any) {
+  await pool.query(
+    'CREATE TABLE IF NOT EXISTS data_jobs (name VARCHAR(100) PRIMARY KEY, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'
+  );
+  const [[{ n }]]: any = await pool.query(
+    "SELECT COUNT(*) AS n FROM data_jobs WHERE name = 'care-catalog-cleanup-2026-11-17'"
+  );
+  if (Number(n) > 0) return;
+
+  const careCategories = ['拐杖', '助行器', '介護鞋', '輪椅移位', '入浴用品', '如廁照護', '成人紙尿褲', '介護床寢具', '防褥瘡', '安全扶手', '餐具圍兜', '銀髮親子'];
+  const [priceRes]: any = await pool.query(
+    'UPDATE products SET price = 0 WHERE price <> 0 AND categoryId IN (SELECT id FROM categories WHERE name IN (?))',
+    [careCategories]
+  );
+  console.log(`🧹 介護目錄整理：${priceRes.affectedRows} 筆商品價格改為詢價（歸零）`);
+
+  const merges: { keeper: string; newName: string; note: string; remove: string[] }[] = [
+    {
+      keeper: 'サニーウォーカーSP（中） 島製作所 コンパクトタイプシルバーカー',
+      newName: 'サニーウォーカーSP 島製作所 コンパクトタイプシルバーカー',
+      note: 'サイズ：中・小',
+      remove: [
+        'サニーウォーカーSP（小） 島製作所 コンパクトタイプシルバーカー',
+      ],
+    },
+    {
+      keeper: '介護食器 曲げ曲げハンドルシリコンスポンジ付(スプーン・フォーク兼用大) 2本セット',
+      newName: '介護食器 曲げ曲げハンドル シリコンスポンジ付 2本セット',
+      note: '種類：スプーン／フォーク／スプーン・フォーク兼用、サイズ：大／小',
+      remove: [
+        '介護食器 曲げ曲げハンドルシリコンスポンジ付(スプーン・フォーク兼用小) 2本セット',
+        '介護食器 曲げ曲げハンドルシリコンスポンジ付(フォーク小) 2本セット',
+        '介護食器 曲げ曲げハンドルシリコンスポンジ付(スプーン小) 2本セット',
+        '介護食器 曲げ曲げハンドルシリコンスポンジ付き（フォーク大） 2本セット',
+        '介護食器 曲げ曲げハンドル シリコンスポンジ付き（スプーン大）2本セット',
+      ],
+    },
+    {
+      keeper: '[おうちモンテ] ぞうきん きいろ（モンテッソーリ知育 日常生活の練習／拭く）',
+      newName: '[おうちモンテ] ぞうきん（モンテッソーリ知育 日常生活の練習／拭く）',
+      note: 'カラー：ベージュ／きいろ／みずいろ／ピンク',
+      remove: [
+        '[おうちモンテ] ぞうきん ピンク（モンテッソーリ知育 日常生活の練習／拭く）',
+        '[おうちモンテ] ぞうきん みずいろ（モンテッソーリ知育 日常生活の練習／拭く）',
+        '[おうちモンテ] ぞうきん ベージュ（モンテッソーリ知育 日常生活の練習／拭く）',
+      ],
+    },
+    {
+      keeper: '[おうちモンテ] だいふきん ベージュ（モンテッソーリ知育 日常生活の練習／拭く）',
+      newName: '[おうちモンテ] だいふきん（モンテッソーリ知育 日常生活の練習／拭く）',
+      note: 'カラー：ベージュ／きいろ／みずいろ／ピンク',
+      remove: [
+        '[おうちモンテ] だいふきん ピンク（モンテッソーリ知育 日常生活の練習／拭く）',
+        '[おうちモンテ] だいふきん みずいろ（モンテッソーリ知育 日常生活の練習／拭く）',
+        '[おうちモンテ] だいふきん きいろ（モンテッソーリ知育 日常生活の練習／拭く）',
+      ],
+    },
+  ];
+
+  for (const m of merges) {
+    const [rows]: any = await pool.query('SELECT specifications FROM products WHERE name = ?', [m.keeper]);
+    if (rows.length > 0) {
+      const spec = String(rows[0].specifications ?? '');
+      const merged = spec.includes(m.note) ? spec : [spec, m.note].filter(Boolean).join(' / ');
+      await pool.query('UPDATE products SET name = ?, specifications = ? WHERE name = ?', [
+        m.newName,
+        merged,
+        m.keeper,
+      ]);
+      // 日文品名原本與品名相同時一併更新，避免日文介面還顯示舊的顏色／尺寸名
+      await pool.query('UPDATE products SET nameJa = ? WHERE name = ? AND nameJa = ?', [
+        m.newName,
+        m.newName,
+        m.keeper,
+      ]);
+    }
+    for (const name of m.remove) {
+      const [r]: any = await pool.query(
+        `DELETE FROM products WHERE name = ?
+           AND NOT EXISTS (SELECT 1 FROM orderItems WHERE orderItems.productId = products.id)
+           AND NOT EXISTS (SELECT 1 FROM cartItems WHERE cartItems.productId = products.id)
+           AND NOT EXISTS (SELECT 1 FROM reviews WHERE reviews.productId = products.id)
+           AND NOT EXISTS (SELECT 1 FROM wishlists WHERE wishlists.productId = products.id)`,
+        [name]
+      );
+      if (r.affectedRows) console.log(`🧹 已合併移除變體：${name}`);
+    }
+  }
+
+  await pool.query("INSERT INTO data_jobs (name) VALUES ('care-catalog-cleanup-2026-11-17')");
+  console.log('✅ 介護目錄整理完成');
+}
+
 /**
  * 啟動時呼叫。失敗只記錄不拋出——回退機制仍會讓網站正常運作，
  * 不該因為初始化問題導致整個服務起不來。
@@ -287,6 +389,7 @@ export async function bootstrapDatabase(pool: any) {
     console.log(fresh ? '🆕 偵測到全新資料庫，開始初始化' : '🔄 檢查資料表結構');
     await applyMigrations(pool);
     await seedProducts(pool);
+    await cleanupCareCatalog(pool);
   } catch (e) {
     console.error('❌ 資料庫初始化失敗:', (e as Error).message);
   }
