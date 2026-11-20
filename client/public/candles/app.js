@@ -117,6 +117,8 @@ fetch('/api/candles/orders/payment-methods', { headers: { accept: 'application/j
 
 let activePhoto = null;
 const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// 有 AI 情境圖的款式（補充照片，排在既有畫面之後；其餘款式之後補上再加進來）。
+const sceneIds = new Set([1, 2, 3, 5, 7, 8, 9, 10, 13, 14, 15, 20, 21, 25, 27, 28, 29, 30]);
 const staticImages = n => {
   const num = String(n).padStart(2, '0');
   const suffix = n === 29 ? '-v2' : '';
@@ -124,14 +126,17 @@ const staticImages = n => {
     lit: `images/lit-${num}${suffix}.jpeg`,
     studio: `images/studio-${num}${suffix}.jpeg`,
     original: `images/candle-${num}.jpeg`,
+    scene: sceneIds.has(n) ? `images/scene-${num}.webp` : null,
     box: n === 20 ? 'images/box-20.jpeg' : null,
   };
 };
 function showScene(scene) {
   if (!activePhoto) return;
   const img = document.getElementById('dialog-image');
-  img.src = scene === 'studio' ? (activePhoto.studio || activePhoto.lit) : activePhoto.lit;
-  img.alt = `${scene === 'lit' ? 'Illustrative lit scene' : 'Clean-background illustrative image'} of ${activePhoto.name}`;
+  img.src = scene === 'studio' ? (activePhoto.studio || activePhoto.lit)
+    : scene === 'scene' ? (activePhoto.scene || activePhoto.lit)
+    : activePhoto.lit;
+  img.alt = `${scene === 'lit' ? 'Illustrative lit scene' : scene === 'scene' ? 'Illustrative styled scene' : 'Clean-background illustrative image'} of ${activePhoto.name}`;
   document.getElementById('dialog-media').classList.toggle('studio', scene === 'studio');
   for (const button of dialog.querySelectorAll('[data-scene]'))
     button.setAttribute('aria-pressed', String(button.dataset.scene === scene));
@@ -158,6 +163,7 @@ function addCard(product) {
     const boxLink = document.getElementById('dialog-box');
     boxLink.hidden = !box;
     if (box) boxLink.href = box;
+    dialog.querySelector('[data-scene="scene"]').hidden = !product.scene;
     showScene('lit');
     dialog.showModal();
   });
