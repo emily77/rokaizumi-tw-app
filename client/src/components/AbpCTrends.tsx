@@ -50,46 +50,46 @@ const lesson = [
 export function AbpCTrends() {
   return (
     <section id="abp-c" aria-labelledby="abp-c-title" className="scroll-mt-6 space-y-8">
-      <header className="overflow-hidden rounded-2xl bg-[#061a33] px-6 py-9 text-white sm:px-9">
+      <header className="overflow-hidden rounded-2xl border border-[#1D3458] bg-[#0A1B31] px-6 py-9 text-white sm:px-9">
         <p className="text-sm font-semibold tracking-widest text-cyan-200">日本 AI 大腦｜研發方向與目前進度</p>
         <h2 id="abp-c-title" className="mt-3 text-3xl font-bold sm:text-5xl">ABC_YPCloud</h2>
         <p className="mt-4 max-w-3xl leading-8 text-sky-100">ABC_YPCloud 是林博 AI 在日本發展的 AI 大腦。研發方向是把組織知識、任務分工與本機及雲端算力接起來，讓企業、教室和內容團隊能在自己的工作場域指派任務、追蹤執行並驗收成果。</p>
         <p className="mt-3 max-w-3xl leading-8 text-sky-100">第一個驗證場景是會議、決議、追蹤與回覆。設計重點包括在使用者授權下搜尋組織記憶、從同一入口協調工具，以及權限撤銷、資料匯出與刪除。</p>
       </header>
 
-      <section aria-labelledby="abp-c-progress" className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <section aria-labelledby="abp-c-progress" className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-8">
         <h3 id="abp-c-progress" className="text-2xl font-bold">目前研發進度</h3>
         <dl className="mt-5 grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl bg-[#e7f6f2] p-4">
-            <dt className="font-bold text-teal-900">已有維運紀錄</dt>
-            <dd className="mt-2 text-sm leading-6 text-slate-700">部分基礎服務已有版本更新、登入與 API 健康檢查、部署回證和重啟確認。</dd>
+          <div className="rounded-xl bg-white/[0.04] p-4">
+            <dt className="font-bold text-teal-300">已有維運紀錄</dt>
+            <dd className="mt-2 text-sm leading-6 text-[#A9BED6]">部分基礎服務已有版本更新、登入與 API 健康檢查、部署回證和重啟確認。</dd>
           </div>
-          <div className="rounded-xl bg-[#edf6fb] p-4">
-            <dt className="font-bold text-sky-900">已整理設計</dt>
-            <dd className="mt-2 text-sm leading-6 text-slate-700">已整理六種設備角色、四個指揮角色、任務樹與跨平台核心架構，以及偏鄉共學示範課流程。</dd>
+          <div className="rounded-xl bg-white/[0.04] p-4">
+            <dt className="font-bold text-sky-300">已整理設計</dt>
+            <dd className="mt-2 text-sm leading-6 text-[#A9BED6]">已整理六種設備角色、四個指揮角色、任務樹與跨平台核心架構，以及偏鄉共學示範課流程。</dd>
           </div>
-          <div className="rounded-xl bg-amber-50 p-4">
-            <dt className="font-bold text-amber-950">待驗證與試點</dt>
-            <dd className="mt-2 text-sm leading-6 text-slate-700">驗證 Apple M4 相容性與效能、遠端桌面整合、備份還原及開機復原，再評估日本節點成本與場域試點。</dd>
+          <div className="rounded-xl bg-white/[0.04] p-4">
+            <dt className="font-bold text-amber-300">待驗證與試點</dt>
+            <dd className="mt-2 text-sm leading-6 text-[#A9BED6]">驗證 Apple M4 相容性與效能、遠端桌面整合、備份還原及開機復原，再評估日本節點成本與場域試點。</dd>
           </div>
         </dl>
       </section>
 
-      <figure className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <figure className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-8">
         <figcaption className="text-2xl font-bold">AI 是組織學 × 經濟學 × 方法學</figcaption>
         <ul className="mt-5 grid gap-3 md:grid-cols-3">
           {principles.map(({ icon: Icon, title, question, text }) => (
-            <li key={title} className="rounded-xl bg-[#edf6fb] p-4">
-              <Icon aria-hidden="true" className="size-7 text-sky-700" />
+            <li key={title} className="rounded-xl bg-white/[0.04] p-4">
+              <Icon aria-hidden="true" className="size-7 text-cyan-300" />
               <h3 className="mt-3 text-lg font-bold">{title}</h3>
               <p className="mt-2 text-sm font-semibold">{question}</p>
-              <p className="mt-1 text-sm leading-6 text-slate-700">{text}</p>
+              <p className="mt-1 text-sm leading-6 text-[#A9BED6]">{text}</p>
             </li>
           ))}
         </ul>
-        <div className="mt-5 rounded-lg bg-[#061a33] p-4 text-white">
+        <div className="mt-5 rounded-lg border border-[#1D3458] bg-[#050B18] p-4 text-white">
           <h3 className="font-semibold">官網發布流程</h3>
-          <ol className="mt-2 flex flex-wrap gap-2 text-sm text-sky-100">
+          <ol className="mt-2 flex flex-wrap gap-2 text-sm text-[#B9CCE2]">
             <li>Lab 驗證</li>
             <li><span aria-hidden="true">→ </span>人工核准</li>
             <li><span aria-hidden="true">→ </span>正式發布</li>
@@ -97,90 +97,90 @@ export function AbpCTrends() {
         </div>
       </figure>
 
-      <figure className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <figure className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-8">
         <figcaption className="text-2xl font-bold">六種設備角色</figcaption>
-        <p className="mt-2 leading-7 text-slate-700">依任務配置設備，配合模型、組織知識與持續維運，從單機試點延伸為場域方案。</p>
+        <p className="mt-2 leading-7 text-[#A9BED6]">依任務配置設備，配合模型、組織知識與持續維運，從單機試點延伸為場域方案。</p>
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {devices.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="rounded-xl bg-[#edf6fb] p-4">
-              <Icon aria-hidden="true" className="text-sky-700" />
+            <li key={title} className="rounded-xl bg-white/[0.04] p-4">
+              <Icon aria-hidden="true" className="text-cyan-300" />
               <h3 className="mt-3 font-semibold">{title}</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-700">{text}</p>
+              <p className="mt-1 text-sm leading-6 text-[#A9BED6]">{text}</p>
             </li>
           ))}
         </ul>
       </figure>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <figure className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+        <figure className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-8">
           <figcaption className="text-2xl font-bold">從目標到驗收</figcaption>
           <ul aria-label="指揮團隊" className="mt-4 grid grid-cols-2 gap-2">
             {roles.map(([name, responsibility]) => (
-              <li key={name} className="rounded-lg border border-sky-200 px-3 py-2 text-sm">
-                <strong className="block text-sky-800">{name}</strong>
-                <span className="text-slate-700">{responsibility}</span>
+              <li key={name} className="rounded-lg border border-[#1D3458] px-3 py-2 text-sm">
+                <strong className="block text-cyan-300">{name}</strong>
+                <span className="text-[#A9BED6]">{responsibility}</span>
               </li>
             ))}
           </ul>
           <ol className="mt-5 space-y-2">
             {execution.map(({ icon: Icon, title, text }, index) => (
               <li key={title}>
-                {index > 0 && <ArrowDown aria-hidden="true" className="mx-auto mb-2 size-4 text-sky-700" />}
-                <div className="flex gap-3 rounded-lg bg-slate-100 p-3">
-                  <Icon aria-hidden="true" className="mt-1 size-5 shrink-0 text-sky-700" />
-                  <div><h3 className="font-semibold">{title}</h3><p className="mt-1 text-sm leading-6 text-slate-700">{text}</p></div>
+                {index > 0 && <ArrowDown aria-hidden="true" className="mx-auto mb-2 size-4 text-cyan-300" />}
+                <div className="flex gap-3 rounded-lg bg-white/[0.04] p-3">
+                  <Icon aria-hidden="true" className="mt-1 size-5 shrink-0 text-cyan-300" />
+                  <div><h3 className="font-semibold">{title}</h3><p className="mt-1 text-sm leading-6 text-[#A9BED6]">{text}</p></div>
                 </div>
               </li>
             ))}
           </ol>
         </figure>
 
-        <figure className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+        <figure className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-8">
           <figcaption className="text-2xl font-bold">本機與雲端共同運作</figcaption>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
             {environments.map(({ icon: Icon, title, text }) => (
-              <li key={title} className="rounded-lg border border-sky-200 p-3">
-                <Icon aria-hidden="true" className="size-5 text-sky-700" />
+              <li key={title} className="rounded-lg border border-[#1D3458] p-3">
+                <Icon aria-hidden="true" className="size-5 text-cyan-300" />
                 <h3 className="mt-2 font-semibold">{title}</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-700">{text}</p>
+                <p className="mt-1 text-sm leading-6 text-[#A9BED6]">{text}</p>
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex gap-3 rounded-lg bg-[#e9f5fa] p-4">
-            <Box aria-hidden="true" className="mt-1 size-5 shrink-0 text-sky-700" />
+          <div className="mt-4 flex gap-3 rounded-lg bg-white/[0.04] p-4">
+            <Box aria-hidden="true" className="mt-1 size-5 shrink-0 text-cyan-300" />
             <div>
               <h3 className="font-semibold">跨平台核心規劃</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-700">Linux、Windows 與 macOS 共用身分、信任、維運和任務執行設計。Apple M4 的隔離 Linux、x86-64 相容性、效能及遠端桌面整合仍待驗證。</p>
+              <p className="mt-1 text-sm leading-6 text-[#A9BED6]">Linux、Windows 與 macOS 共用身分、信任、維運和任務執行設計。Apple M4 的隔離 Linux、x86-64 相容性、效能及遠端桌面整合仍待驗證。</p>
             </div>
           </div>
         </figure>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <article className="rounded-2xl bg-[#e7f6f2] p-6 sm:p-8">
-          <Radio aria-hidden="true" className="text-teal-800" />
+        <article className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-8">
+          <Radio aria-hidden="true" className="text-teal-300" />
           <h3 className="mt-3 text-2xl font-bold">人與 AI 共創</h3>
-          <p className="mt-3 leading-7 text-slate-700">將語音對話和採訪整理成可編輯的知識與作品。廣播可製作 Podcast，教師可共編教材，地方團隊可保存故事，企業和創作者可整理品牌內容與短影音。</p>
-          <ol className="mt-4 flex flex-wrap gap-2 text-sm font-semibold text-teal-900" aria-label="內容共創流程">
+          <p className="mt-3 leading-7 text-[#A9BED6]">將語音對話和採訪整理成可編輯的知識與作品。廣播可製作 Podcast，教師可共編教材，地方團隊可保存故事，企業和創作者可整理品牌內容與短影音。</p>
+          <ol className="mt-4 flex flex-wrap gap-2 text-sm font-semibold text-teal-200" aria-label="內容共創流程">
             {["對話發想", "協作執行", "整理知識", "交付作品"].map(step => (
-              <li key={step} className="rounded-md bg-white px-3 py-2">{step}</li>
+              <li key={step} className="rounded-md bg-white/[0.06] px-3 py-2">{step}</li>
             ))}
           </ol>
           <h4 className="mt-6 font-semibold">偏鄉共學的 60 分鐘示範課</h4>
-          <ol className="mt-2 divide-y divide-teal-200">
+          <ol className="mt-2 divide-y divide-[#1D3458]">
             {lesson.map(([time, title]) => (
-              <li key={title} className="flex items-baseline gap-4 py-2 text-sm"><span className="shrink-0 font-semibold text-teal-900">{time}</span><span>{title}</span></li>
+              <li key={title} className="flex items-baseline gap-4 py-2 text-sm"><span className="shrink-0 font-semibold text-teal-300">{time}</span><span>{title}</span></li>
             ))}
           </ol>
         </article>
 
-        <article className="rounded-2xl bg-[#eaf1fb] p-6 sm:p-8">
-          <ShieldCheck aria-hidden="true" className="text-sky-800" />
+        <article className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-8">
+          <ShieldCheck aria-hidden="true" className="text-sky-300" />
           <h3 className="mt-3 text-2xl font-bold">資安與日本場域試點</h3>
-          <p className="mt-3 leading-7 text-slate-700">以大阪為合作起點，優先規劃中小企業的 AI 權限與成本治理，以及教室和地方內容團隊的遠距共創。日本運算節點的部署、成本與維運模式仍待驗證。</p>
+          <p className="mt-3 leading-7 text-[#A9BED6]">以大阪為合作起點，優先規劃中小企業的 AI 權限與成本治理，以及教室和地方內容團隊的遠距共創。日本運算節點的部署、成本與維運模式仍待驗證。</p>
           <dl className="mt-5 space-y-4">
-            <div className="rounded-lg bg-white p-4"><dt className="font-semibold">近期維運經驗</dt><dd className="mt-1 text-sm leading-6 text-slate-700">參考資料涵蓋版本更新、登入與 API 健康檢查、部署回證，以及服務重啟後的運作確認。</dd></div>
-            <div className="rounded-lg bg-white p-4"><dt className="font-semibold">待驗證項目</dt><dd className="mt-1 text-sm leading-6 text-slate-700">完整備份還原演練、服務開機復原、更新覆蓋率及試點場域的成果驗收。</dd></div>
+            <div className="rounded-lg bg-white/[0.04] p-4"><dt className="font-semibold">近期維運經驗</dt><dd className="mt-1 text-sm leading-6 text-[#A9BED6]">參考資料涵蓋版本更新、登入與 API 健康檢查、部署回證，以及服務重啟後的運作確認。</dd></div>
+            <div className="rounded-lg bg-white/[0.04] p-4"><dt className="font-semibold">待驗證項目</dt><dd className="mt-1 text-sm leading-6 text-[#A9BED6]">完整備份還原演練、服務開機復原、更新覆蓋率及試點場域的成果驗收。</dd></div>
           </dl>
         </article>
       </div>

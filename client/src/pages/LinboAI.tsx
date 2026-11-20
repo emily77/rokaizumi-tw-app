@@ -32,31 +32,54 @@ const japan = [
   ["企業 AI 治理與制度研究", "為需要擴大 AI 使用的團隊規劃集中閘道、權限、日誌與用量管理。數位資產方向聚焦制度研究及技術可行性。"],
 ];
 
+const heroGlow =
+  "radial-gradient(60% 80% at 85% 0%, rgba(34,211,238,0.22) 0%, rgba(34,211,238,0) 55%), radial-gradient(50% 60% at 0% 100%, rgba(129,140,248,0.18) 0%, rgba(129,140,248,0) 55%)";
+const gridLines =
+  "linear-gradient(rgba(56,130,246,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(56,130,246,0.08) 1px, transparent 1px)";
+
 export default function LinboAI() {
   const { language } = useLanguage();
   if (language !== "zh") return <LinboInternational language={language} />;
   return (
-    <div className="min-h-screen bg-[#f2f6fa] text-slate-950">
+    <div className="min-h-screen bg-[#050B18] text-[#E6EEF7]">
       <PortalNavigation />
-      <header className="bg-[#061a33] text-white">
-        <div className="mx-auto max-w-6xl px-5 py-5 sm:px-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-sky-200 hover:text-white">
+      <header className="relative overflow-hidden bg-[#050B18] text-white">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: heroGlow }}
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ backgroundImage: gridLines, backgroundSize: "26px 26px" }}
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto max-w-6xl px-5 py-5 sm:px-8">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-sky-300 hover:text-white">
             <ArrowLeft aria-hidden="true" size={16} /> 返回ろかいずみ首頁
           </Link>
           <div className="grid gap-8 py-12 sm:py-20 lg:grid-cols-[1.5fr_1fr] lg:items-end">
             <div>
-              <p className="text-sm font-semibold tracking-widest text-cyan-200">林博 AI · Dr. Lin Yin-Chih</p>
+              <p className="flex items-center gap-2 font-mono text-sm font-semibold tracking-[0.22em] text-[#7DD3FC]">
+                <span className="inline-block h-2 w-2 rounded-full bg-[#22D3EE] shadow-[0_0_10px_#22D3EE]" aria-hidden="true" />
+                林博 AI · Dr. Lin Yin-Chih
+              </p>
               <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-6xl">林吟芝博士</h1>
-              <p className="mt-3 text-xl font-medium text-sky-100 sm:text-2xl">企業 AI 戰略與數位轉型顧問</p>
-              <p className="mt-5 max-w-2xl leading-8 text-slate-200">從三十年跨產業經營、資訊基礎設施維運與經濟學研究出發，協助企業把 AI 放進日常營運，讓成效、成本和責任都看得見。</p>
-              <a href="#japan" className="mt-7 inline-flex items-center gap-2 rounded-lg bg-cyan-200 px-5 py-3 font-semibold text-[#061a33] hover:bg-white">
+              <p className="mt-3 bg-gradient-to-r from-[#22D3EE] to-[#A5B4FC] bg-clip-text text-xl font-bold text-transparent sm:text-2xl">企業 AI 戰略與數位轉型顧問</p>
+              <p className="mt-5 max-w-2xl leading-8 text-[#A9BED6]">從三十年跨產業經營、資訊基礎設施維運與經濟學研究出發，協助企業把 AI 放進日常營運，讓成效、成本和責任都看得見。</p>
+              <a href="#japan" className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#22D3EE] px-5 py-3 font-semibold text-[#04222E] hover:bg-white">
                 探索日本發展方向 <ArrowRight aria-hidden="true" size={17} />
               </a>
-              <a href="#abp-c" className="ml-4 mt-4 inline-flex items-center gap-2 py-3 font-semibold text-cyan-100 underline underline-offset-4 hover:text-white">看 ABC_YPCloud 日本研發進度</a>
+              <a href="#abp-c" className="ml-4 mt-4 inline-flex items-center gap-2 rounded-full border border-[#2B4A6B] px-5 py-3 font-semibold text-[#BFE3FF] hover:bg-white/10">看 ABC_YPCloud 日本研發進度</a>
+              <div className="mt-8 flex flex-wrap gap-2 font-mono text-[11px]">
+                {["AI AGENT", "MODEL ROUTING", "TOKEN GOVERNANCE", "DX"].map(tag => (
+                  <span key={tag} className="rounded-md border border-[#1D3458] px-2.5 py-1.5 text-[#8FB8DD]">{tag}</span>
+                ))}
+              </div>
             </div>
-            <aside lang="ja" className="rounded-2xl border border-sky-700 bg-[#0b2747] p-6">
+            <aside lang="ja" className="rounded-2xl border border-[#23507A] bg-white/[0.04] p-6 backdrop-blur">
               <h2 className="text-lg font-semibold text-cyan-100">日本企業の皆さまへ</h2>
-              <p className="mt-3 leading-8 text-slate-200">AIエージェントの導入、業務の自動化、利用コストの管理、日台間の事業展開を支援します。まず現場の業務を一つ選び、効果と運用上の課題を確認するところから始めます。</p>
+              <p className="mt-3 leading-8 text-[#B9CCE2]">AIエージェントの導入、業務の自動化、利用コストの管理、日台間の事業展開を支援します。まず現場の業務を一つ選び、効果と運用上の課題を確認するところから始めます。</p>
             </aside>
           </div>
         </div>
@@ -64,13 +87,14 @@ export default function LinboAI() {
 
       <main className="mx-auto max-w-6xl space-y-16 px-5 py-14 sm:px-8">
         <section aria-labelledby="strengths">
-          <h2 id="strengths" className="text-3xl font-bold">林博的三項優勢</h2>
+          <p className="font-mono text-xs tracking-[0.2em] text-slate-500">{"// EXPERTISE"}</p>
+          <h2 id="strengths" className="mt-2 text-3xl font-bold">林博的三項優勢</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {strengths.map(({ icon: Icon, title, body }) => (
-              <article key={title} className="rounded-xl border border-slate-200 bg-white p-6">
-                <Icon aria-hidden="true" className="text-sky-700" />
+              <article key={title} className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6">
+                <Icon aria-hidden="true" className="text-cyan-300" />
                 <h3 className="mt-4 text-xl font-semibold">{title}</h3>
-                <p className="mt-3 leading-7 text-slate-700">{body}</p>
+                <p className="mt-3 leading-7 text-[#A9BED6]">{body}</p>
               </article>
             ))}
           </div>
@@ -79,36 +103,39 @@ export default function LinboAI() {
         <AbpCTrends />
 
         <section aria-labelledby="projects">
-          <h2 id="projects" className="text-3xl font-bold">專案與應用</h2>
-          <p className="mt-3 max-w-2xl leading-7 text-slate-700">從企業內部治理到第一線營運，以下專案展示林博如何設計 AI 工作流程，以及可延伸到日本的應用。</p>
+          <p className="font-mono text-xs tracking-[0.2em] text-slate-500">{"// PROJECTS"}</p>
+          <h2 id="projects" className="mt-2 text-3xl font-bold">專案與應用</h2>
+          <p className="mt-3 max-w-2xl leading-7 text-[#A9BED6]">從企業內部治理到第一線營運，以下專案展示林博如何設計 AI 工作流程，以及可延伸到日本的應用。</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {projects.map(([category, stage, title, body]) => (
-              <article key={title} className="rounded-xl border border-slate-200 bg-white p-6">
-                <p className="text-sm font-semibold text-sky-800">{category} · {stage}</p>
+              <article key={title} className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6">
+                <p className="font-mono text-xs font-semibold tracking-wider text-cyan-300">{category} · {stage}</p>
                 <h3 className="mt-2 text-xl font-semibold">{title}</h3>
-                <p className="mt-3 leading-7 text-slate-700">{body}</p>
+                <p className="mt-3 leading-7 text-[#A9BED6]">{body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section id="japan" aria-labelledby="japan-title" className="scroll-mt-5 rounded-2xl bg-[#061a33] p-6 text-white sm:p-9">
-          <h2 id="japan-title" className="text-3xl font-bold">在日本的發展方向</h2>
+        <section id="japan" aria-labelledby="japan-title" className="scroll-mt-5 rounded-2xl border border-[#23507A] bg-gradient-to-br from-[#0A2547] to-[#071426] p-6 text-white sm:p-9">
+          <p className="font-mono text-xs tracking-[0.2em] text-[#7DD3FC]">{"// JAPAN"}</p>
+          <h2 id="japan-title" className="mt-2 text-3xl font-bold">在日本的發展方向</h2>
           <p className="mt-3 max-w-2xl leading-7 text-sky-100">以大阪為合作起點，先做可驗收的小型試點，再把有效的流程擴展到其他團隊與市場。</p>
           <div className="mt-7 grid gap-6 md:grid-cols-2">
             {japan.map(([title, body]) => (
-              <article key={title} className="border-t border-sky-700 pt-4">
+              <article key={title} className="border-t border-[#23507A] pt-4">
                 <h3 className="text-xl font-semibold text-cyan-100">{title}</h3>
-                <p className="mt-2 leading-7 text-slate-200">{body}</p>
+                <p className="mt-2 leading-7 text-[#B9CCE2]">{body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section aria-labelledby="contact" className="rounded-xl border border-slate-200 bg-white p-6 sm:p-9">
-          <h2 id="contact" className="text-3xl font-bold">企業合作</h2>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-700">提供決策層策略諮詢、企業 AI 閘道與算力成本治理、跨部門 AI 工作流程規劃，以及主管與團隊工作坊。歡迎來信說明產業、想改善的流程與期待成果。</p>
-          <a href="mailto:cia8885@gmail.com" className="mt-5 inline-flex rounded-lg bg-[#0b4778] px-5 py-3 font-semibold text-white hover:bg-[#082f50]">聯絡林博</a>
+        <section aria-labelledby="contact" className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6 sm:p-9">
+          <p className="font-mono text-xs tracking-[0.2em] text-slate-500">{"// CONTACT"}</p>
+          <h2 id="contact" className="mt-2 text-3xl font-bold">企業合作</h2>
+          <p className="mt-3 max-w-3xl leading-7 text-[#A9BED6]">提供決策層策略諮詢、企業 AI 閘道與算力成本治理、跨部門 AI 工作流程規劃，以及主管與團隊工作坊。歡迎來信說明產業、想改善的流程與期待成果。</p>
+          <a href="mailto:cia8885@gmail.com" className="mt-5 inline-flex rounded-full bg-[#22D3EE] px-5 py-3 font-semibold text-[#04222E] hover:bg-white">聯絡林博</a>
         </section>
       </main>
       <SiteFooter />
