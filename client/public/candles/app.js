@@ -118,7 +118,7 @@ fetch('/api/candles/orders/payment-methods', { headers: { accept: 'application/j
 let activePhoto = null;
 const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // 有 AI 情境圖的款式（補充照片，排在既有畫面之後；其餘款式之後補上再加進來）。
-const sceneIds = new Set([1, 2, 3, 5, 7, 8, 9, 10, 13, 14, 15, 20, 21, 25, 27, 28, 29, 30]);
+const sceneIds = new Set([1, 2, 3, 5, 7, 8, 9, 10, 13, 14, 15, 16, 17, 20, 21, 25, 27, 28, 29, 30]);
 const staticImages = n => {
   const num = String(n).padStart(2, '0');
   const suffix = n === 29 ? '-v2' : '';
