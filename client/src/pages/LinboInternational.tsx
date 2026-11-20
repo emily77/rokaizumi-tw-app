@@ -37,35 +37,79 @@ const copy = {
   },
 };
 
+const heroGlow =
+  "radial-gradient(60% 80% at 85% 0%, rgba(34,211,238,0.22) 0%, rgba(34,211,238,0) 55%), radial-gradient(50% 60% at 0% 100%, rgba(129,140,248,0.18) 0%, rgba(129,140,248,0) 55%)";
+const gridLines =
+  "linear-gradient(rgba(56,130,246,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(56,130,246,0.08) 1px, transparent 1px)";
+
 export function LinboInternational({ language }: { language: keyof typeof copy }) {
   const c = copy[language];
   return (
-    <div className="min-h-screen bg-[#f2f6fa] text-slate-950">
+    <div className="min-h-screen bg-[#050B18] text-[#E6EEF7]">
       <PortalNavigation />
       <main>
-        <header className="bg-[#061a33] px-5 py-14 text-white">
-          <div className="mx-auto max-w-6xl">
-            <h1 className="text-4xl font-bold sm:text-6xl">{c.name}</h1>
-            <p className="mt-3 text-xl text-sky-100">{c.headline}</p>
-            <p className="mt-4 max-w-2xl leading-7 text-slate-200">{c.intro}</p>
-            <a href="#abp-c" className="mt-6 inline-block rounded-lg bg-cyan-200 px-4 py-3 font-semibold text-[#061a33]">{c.jump}</a>
+        <header className="relative overflow-hidden bg-[#050B18] px-5 py-14 text-white">
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: heroGlow }}
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ backgroundImage: gridLines, backgroundSize: "26px 26px" }}
+            aria-hidden="true"
+          />
+          <div className="relative mx-auto max-w-6xl">
+            <p className="flex items-center gap-2 font-mono text-sm font-semibold tracking-[0.22em] text-[#7DD3FC]">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#22D3EE] shadow-[0_0_10px_#22D3EE]" aria-hidden="true" />
+              LINBO AI — ENTERPRISE AI
+            </p>
+            <h1 className="mt-4 text-4xl font-bold sm:text-6xl">{c.name}</h1>
+            <p className="mt-3 bg-gradient-to-r from-[#22D3EE] to-[#A5B4FC] bg-clip-text text-xl font-bold text-transparent">{c.headline}</p>
+            <p className="mt-4 max-w-2xl leading-7 text-[#A9BED6]">{c.intro}</p>
+            <a href="#abp-c" className="mt-6 inline-block rounded-full bg-[#22D3EE] px-5 py-3 font-semibold text-[#04222E] hover:bg-white">{c.jump}</a>
+            <div className="mt-8 flex flex-wrap gap-2 font-mono text-[11px]">
+              {["AI AGENT", "MODEL ROUTING", "TOKEN GOVERNANCE", "DX"].map(tag => (
+                <span key={tag} className="rounded-md border border-[#1D3458] px-2.5 py-1.5 text-[#8FB8DD]">{tag}</span>
+              ))}
+            </div>
           </div>
         </header>
         <div className="mx-auto max-w-6xl space-y-8 px-5 py-10">
-          <section className="rounded-xl bg-white p-6">
-            <h2 className="text-2xl font-bold">{c.strengths[0]}</h2>
-            <ul className="mt-4 list-disc space-y-2 pl-5">{c.strengths.slice(1).map(item => <li key={item}>{item}</li>)}</ul>
+          <section className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6">
+            <p className="font-mono text-xs tracking-[0.2em] text-slate-500">{"// EXPERTISE"}</p>
+            <h2 className="mt-2 text-2xl font-bold">{c.strengths[0]}</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {c.strengths.slice(1).map(item => (
+                <article key={item} className="rounded-xl bg-white/[0.04] p-4">
+                  <p className="font-semibold leading-7">{item}</p>
+                </article>
+              ))}
+            </div>
           </section>
-          <section id="abp-c" className="scroll-mt-4 rounded-xl bg-white p-6">
-            <h2 className="text-2xl font-bold">ABC_YPCloud</h2>
-            <h3 className="mt-2 text-lg font-semibold">{c.progress}</h3>
-            <p className="mt-3 max-w-3xl leading-7">{c.brain}</p>
-            <ol className="mt-4 grid gap-3 md:grid-cols-3">{c.stages.map(item => <li key={item} className="rounded-lg bg-sky-50 p-4 leading-6">{item}</li>)}</ol>
+          <section id="abp-c" className="scroll-mt-4 rounded-2xl border border-[#23507A] bg-gradient-to-br from-[#0A2547] to-[#071426] p-6">
+            <p className="font-mono text-xs tracking-[0.2em] text-[#7DD3FC]">{"// ABC_YPCLOUD R&D"}</p>
+            <h2 className="mt-2 text-2xl font-bold">ABC_YPCloud</h2>
+            <h3 className="mt-2 text-lg font-semibold text-cyan-100">{c.progress}</h3>
+            <p className="mt-3 max-w-3xl leading-7 text-[#B9CCE2]">{c.brain}</p>
+            <ol className="mt-5 grid gap-3 md:grid-cols-3">
+              {c.stages.map((item, i) => (
+                <li key={item} className="rounded-xl bg-white/[0.04] p-4 leading-6 text-[#B9CCE2]">
+                  <span className="mb-2 block font-mono text-sm font-bold text-[#22D3EE]">{String(i + 1).padStart(2, "0")}</span>
+                  {item}
+                </li>
+              ))}
+            </ol>
           </section>
-          <section className="rounded-xl bg-white p-6">
-            <h2 className="text-2xl font-bold">{c.projects[0]}</h2>
-            <ul className="mt-4 list-disc space-y-2 pl-5">{c.projects.slice(1).map(item => <li key={item}>{item}</li>)}</ul>
-            <a href="mailto:cia8885@gmail.com" className="mt-6 inline-block rounded-lg bg-[#07556c] px-4 py-3 font-semibold text-white">{c.contact}</a>
+          <section className="rounded-2xl border border-[#1D3458] bg-[#0B1A2E] p-6">
+            <p className="font-mono text-xs tracking-[0.2em] text-slate-500">{"// PROJECTS"}</p>
+            <h2 className="mt-2 text-2xl font-bold">{c.projects[0]}</h2>
+            <ul className="mt-5 grid gap-3 md:grid-cols-3">
+              {c.projects.slice(1).map(item => (
+                <li key={item} className="rounded-xl bg-white/[0.04] p-4 font-semibold leading-7">{item}</li>
+              ))}
+            </ul>
+            <a href="mailto:cia8885@gmail.com" className="mt-6 inline-block rounded-full bg-[#22D3EE] px-5 py-3 font-semibold text-[#04222E] hover:bg-white">{c.contact}</a>
           </section>
         </div>
       </main>
