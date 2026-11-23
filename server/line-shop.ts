@@ -104,6 +104,7 @@ const DONKI_OFFICIAL_IMAGES_CYCLE2_MIGRATION =
 const TUNEWAVE_MODEL_MIGRATION = "2026-11-12-tunewave-model-dkod";
 const SHIP_OLD_ORDERS_MIGRATION = "2026-11-13-ship-orders-before-today";
 const ROMND_FAUX_LASH_MIGRATION = "2026-11-16-romnd-faux-lash-name";
+const DONKI_WEEKLY_DELIST_MIGRATION = "2026-11-23-donki-weekly-delist";
 // 2026-11-12 唐吉訶德商品圖換成官方／原廠圖：新圖放在 -v2 檔名（舊網址
 // 有 7 天快取，同名覆寫客人短期內還是看到舊的傳單裁圖），這裡把資料庫
 // 兩層的 image 從舊路徑換到 -v2；目前值不等於舊路徑就不動（後台若已
@@ -2119,6 +2120,21 @@ async function runShopMigrations(db: Pool) {
               [JSON.stringify(nextAdmin), id]
             );
         }
+      }
+    );
+
+    // 2026-11-23 唐吉訶德第 1 期週替品項到期下架：DON-13-015／016／017
+    // 的特價期間（11/16–11/22）已結束。比照專屬賣場下架作法：
+    // active=FALSE、非刪除，資料完整保留，之後在後台重新上架即可；
+    // 種子目錄不動（開機 INSERT IGNORE 不會把已停用列改回上架）。
+    await onceWithLock(
+      conn,
+      "line_shop_donki_weekly_delist_2026_11_23",
+      DONKI_WEEKLY_DELIST_MIGRATION,
+      async () => {
+        await conn.execute(
+          "UPDATE line_shop_products SET active=FALSE WHERE id IN ('DON-13-015','DON-13-016','DON-13-017')"
+        );
       }
     );
   } finally {
