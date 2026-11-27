@@ -9,13 +9,13 @@ const data = [
   [27, 'Fruit & Flower Cake'], [28, 'Strawberry Cake'],
   [29, 'Knitted Mitten + Yarn Ball (1 of each)'], [30, 'Rose Ball (1 candle · random colour)']
 ];
-// Fill these five labels when the scent list is confirmed. The dropdown stays hidden until all five are ready.
+// Confirmed scent list (finalised 2026-11-27): five fragrances, customer picks one for the whole set.
 const scentOptions = [
-  { value: 'scent-white-floral', label: 'A. White Floral' },
-  { value: 'scent-relaxing-herb', label: 'B. Relaxing Herb' },
-  { value: 'scent-sweet-berry', label: 'C. Sweet Berry' },
-  { value: 'scent-citrus-mint', label: 'D. Citrus Mint' },
-  { value: 'scent-unscented', label: 'E. Unscented' },
+  { value: 'scent-suzuran', label: 'Suzuran' },
+  { value: 'scent-lemon', label: 'Lemon' },
+  { value: 'scent-perfume', label: 'Perfume' },
+  { value: 'scent-citrus', label: 'Citrus' },
+  { value: 'scent-magnolia', label: 'Magnolia' },
 ];
 const selected = new Set();
 let orderPlaced = false;
@@ -41,7 +41,7 @@ if (readyScentOptions.length === 5) {
     scentSelect.add(new Option(option.label, option.value));
   const scentHelp = document.createElement('small');
   scentHelp.id = 'scent-help';
-  scentHelp.textContent = 'One fragrance will be used for all five candles.';
+  scentHelp.textContent = 'Every candle is scented — pick your fragrance for your set. One fragrance will be used for all five candles. Even unlit, it gives off a gentle fragrance.';
   const noteLabel = orderForm.querySelector('label[for="order-note"]');
   orderForm.insertBefore(scentLabel, noteLabel);
   orderForm.insertBefore(scentSelect, noteLabel);

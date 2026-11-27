@@ -118,11 +118,18 @@ const candlePrice = (market: "AU" | "TW") => market === "TW"
 const audLabel = () => `A$${prices.aud}`;
 const twdLabel = () => `NT$${prices.twd.toLocaleString("en-US")}`;
 
+const fragranceFromNote = (note: string): string | undefined => {
+  const match = /(?:^|\n)Fragrance choice:\s*(.+)/.exec(note ?? "");
+  const value = match?.[1]?.trim().slice(0, 100);
+  return value || undefined;
+};
+
 async function createCandleCheckout(order: CandleOrder, market: "AU" | "TW", receiptToken?: string) {
   const key = process.env.STRIPE_SECRET_KEY || process.env.LINE_SHOP_STRIPE_SECRET_KEY;
   if (!key) throw new Error("Stripe payment is not configured");
   const stripe = new Stripe(key);
   const price = { ...candlePrice(market), ...(order.amount ? { amount: order.amount } : {}) };
+  const fragrance = fragranceFromNote(order.note);
   const origin = process.env.PUBLIC_BASE_URL || "https://rokaizumi-tw.jp";
   const path = market === "TW" ? "/candles-tw/" : "/candles/";
   const session = await stripe.checkout.sessions.create({
@@ -133,7 +140,7 @@ async function createCandleCheckout(order: CandleOrder, market: "AU" | "TW", rec
     billing_address_collection: "required",
     success_url: receiptToken ? `${origin}${path}?payment=success&order=${order.id}&receipt=${receiptToken}` : `${origin}${path}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: receiptToken ? `${origin}${path}?payment=cancelled&order=${order.id}&receipt=${receiptToken}` : `${origin}${path}#order`,
-    metadata: { candleOrderId: order.id, candleMarket: market },
+    metadata: { candleOrderId: order.id, candleMarket: market, ...(fragrance ? { candleFragrance: fragrance } : {}) },
   }, { idempotencyKey: `candle-checkout-${order.id}` });
   if (!session.url || new URL(session.url).origin !== "https://checkout.stripe.com") throw new Error("Stripe checkout URL unavailable");
   return session;

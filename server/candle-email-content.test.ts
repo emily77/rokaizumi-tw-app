@@ -17,7 +17,7 @@ const row = {
   id: "RI-PREVIEW-20261108", customer_name: "Alex Example", customer_email: "customer@example.com",
   customer_phone: "+61400000000", street_address: "1 Example Street", suburb: "Sydney",
   state: "NSW", postcode: "2000", items: [1, 2, 3, 5, 7],
-  note: "Fragrance choice: A. White Floral", status: "paid", market: "AU", payment_method: "card",
+  note: "Fragrance choice: Suzuran", status: "paid", market: "AU", payment_method: "card",
 };
 
 function savePreview(name: string, mail: any) {
@@ -80,7 +80,7 @@ describe("Australian candle email content (no external delivery)", () => {
     expect(mail.to).toBe("customer@example.com");
     expect(mail.replyTo).toBe("owner@example.com");
     expect(mail.subject).toContain("awaiting payment");
-    for (const text of ["not a payment receipt", "A$99.00", "Delivery to Australia is included", "Stripe", "Do not make a separate bank transfer", "RZ-C001", "RZ-C002", "RZ-C003", "RZ-C005", "RZ-C007", "White Floral", "1 Example Street", "Sydney, NSW 2000", "3 business days"]) expect(mail.text).toContain(text);
+    for (const text of ["not a payment receipt", "A$99.00", "Delivery to Australia is included", "Stripe", "Do not make a separate bank transfer", "RZ-C001", "RZ-C002", "RZ-C003", "RZ-C005", "RZ-C007", "Suzuran", "1 Example Street", "Sydney, NSW 2000", "3 business days"]) expect(mail.text).toContain(text);
     expect(mail.text).not.toContain("Account number:");
     expect(mail.html).toContain("Order confirmation");
     savePreview("customer-order-stripe", mail);
@@ -104,7 +104,7 @@ describe("Australian candle email content (no external delivery)", () => {
     }
     const merchant = sendMail.mock.calls.find(([m]) => m.to === "owner@example.com")![0];
     expect(merchant.text).toContain("Customer: Alex Example");
-    expect(merchant.text).toContain("Fragrance choice: A. White Floral");
+    expect(merchant.text).toContain("Fragrance choice: Suzuran");
     expect(merchant.text).toContain("1 Example Street, Sydney, NSW 2000");
     await retryPaidCandleEmails();
     expect(sendMail).toHaveBeenCalledTimes(2);
